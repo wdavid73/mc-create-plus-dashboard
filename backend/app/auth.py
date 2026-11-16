@@ -1,4 +1,5 @@
 import os
+import threading
 import time
 
 import bcrypt
@@ -19,6 +20,11 @@ LOCKOUT_THRESHOLD = 5
 # persist across restarts, is not shared across multiple worker processes,
 # and is not a durable audit log of failed logins.
 _failed_attempts: dict[str, list[float]] = {}
+# Guards all reads/writes to _failed_attempts, since FastAPI runs sync route
+# handlers in a thread pool and the prune-check-append sequence below must be
+# atomic to prevent concurrent requests from the same client racing past the
+# lockout threshold.
+_failed_attempts_lock = threading.Lock()
 
 
 class LoginRequest(BaseModel):
@@ -40,14 +46,27 @@ def _prune_old_attempts(client_id: str, now: float) -> list[float]:
     return attempts
 
 
+def _get_client_id(request: Request) -> str:
+    # Behind a reverse proxy (e.g. Caddy), request.client.host is the proxy's
+    # own address, not the real client. Caddy forwards the real client IP via
+    # X-Forwarded-For; prefer the first (left-most) address there, falling
+    # back to request.client.host when the header is absent (e.g. in tests).
+    forwarded_for = request.headers.get("x-forwarded-for", "")
+    first_hop = forwarded_for.split(",")[0].strip()
+    if first_hop:
+        return first_hop
+    return request.client.host if request.client else "unknown"
+
+
 @router.post("/api/login")
 def login(body: LoginRequest, request: Request, response: Response):
-    client_id = request.client.host if request.client else "unknown"
+    client_id = _get_client_id(request)
     now = time.time()
 
-    attempts = _prune_old_attempts(client_id, now)
-    if len(attempts) >= LOCKOUT_THRESHOLD:
-        raise HTTPException(status_code=429, detail="Too many failed login attempts. Try again later.")
+    with _failed_attempts_lock:
+        attempts = _prune_old_attempts(client_id, now)
+        if len(attempts) >= LOCKOUT_THRESHOLD:
+            raise HTTPException(status_code=429, detail="Too many failed login attempts. Try again later.")
 
     admin_username = os.environ.get("ADMIN_USERNAME", "")
     admin_password_hash = os.environ.get("ADMIN_PASSWORD_HASH", "")
@@ -57,12 +76,15 @@ def login(body: LoginRequest, request: Request, response: Response):
     )
 
     if not valid:
-        attempts.append(now)
-        _failed_attempts[client_id] = attempts
+        with _failed_attempts_lock:
+            attempts = _prune_old_attempts(client_id, now)
+            attempts.append(now)
+            _failed_attempts[client_id] = attempts
         raise HTTPException(status_code=401, detail="Invalid username or password")
 
     # Successful login clears this client's failed-attempt history.
-    _failed_attempts.pop(client_id, None)
+    with _failed_attempts_lock:
+        _failed_attempts.pop(client_id, None)
 
     serializer = _get_serializer()
     token = serializer.dumps({"user": body.username})
