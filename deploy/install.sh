@@ -66,7 +66,11 @@ fi
 "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/backend/requirements.txt"
 
 echo "==> Installing .env from $ENV_SRC"
-cp "$ENV_SRC" "$INSTALL_DIR/.env"
+if [ "$(readlink -f "$ENV_SRC")" != "$(readlink -f "$INSTALL_DIR/.env" 2>/dev/null || echo "")" ]; then
+    cp "$ENV_SRC" "$INSTALL_DIR/.env"
+else
+    echo "    (source and destination are the same file, skipping copy)"
+fi
 chmod 600 "$INSTALL_DIR/.env"
 chown "$SERVICE_USER:$SERVICE_GROUP" "$INSTALL_DIR/.env"
 
