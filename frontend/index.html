@@ -9,6 +9,7 @@
   :root {
     --bg: #0f1216;
     --panel: #171b21;
+    --panel-2: #1c2129;
     --panel-border: #272c34;
     --text: #e7e9ec;
     --muted: #8b939f;
@@ -17,12 +18,13 @@
     --danger: #d9664f;
     --danger-dim: #4a2e2a;
     --warn: #e0b341;
+    --info: #7aa7d6;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   }
   * { box-sizing: border-box; }
   @media (prefers-reduced-motion: reduce) {
-    .players-list li { animation: none !important; opacity: 1 !important; transform: none !important; }
-    button.action, .logout-btn { transition: border-color 160ms ease, color 160ms ease !important; }
+    .players-list li, .tile { animation: none !important; opacity: 1 !important; transform: none !important; }
+    button.action, .logout-btn, .switch-track { transition: border-color 160ms ease, color 160ms ease !important; }
     button.action:active, .logout-btn:active { transform: none !important; }
   }
   body {
@@ -66,9 +68,7 @@
     color: var(--accent);
     margin-left: 10px;
   }
-  .status-pill .dot {
-    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
-  }
+  .status-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
   .status-pill.offline { background: var(--danger-dim); color: var(--danger); }
   .status-pill.offline .dot { background: var(--danger); }
   .logout-btn {
@@ -87,13 +87,12 @@
   }
   main {
     padding: 20px 24px 40px;
-    max-width: 1100px;
+    max-width: 1180px;
     margin: 0 auto;
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 16px;
-    grid-template-columns: 1fr 1fr;
   }
-  .full { grid-column: 1 / -1; }
   .card {
     background: var(--panel);
     border: 1px solid var(--panel-border);
@@ -109,7 +108,34 @@
     margin: 0 0 12px;
     font-weight: 600;
   }
-  .controls { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* Summary tiles */
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .tile {
+    opacity: 0; transform: translateY(6px);
+    animation: tile-in 260ms var(--ease-out) forwards;
+  }
+  .tile:nth-child(1) { animation-delay: 0ms; }
+  .tile:nth-child(2) { animation-delay: 40ms; }
+  .tile:nth-child(3) { animation-delay: 80ms; }
+  .tile:nth-child(4) { animation-delay: 120ms; }
+  .tile:nth-child(5) { animation-delay: 160ms; }
+  @keyframes tile-in { to { opacity: 1; transform: translateY(0); } }
+  .tile-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .tile-value { font-size: 22px; font-weight: 700; }
+  .tile-value .unit { font-size: 13px; font-weight: 500; color: var(--muted); }
+  .tile-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .tile-soon { font-size: 13px; color: #7d8694; font-style: italic; }
+  .mini-bar { height: 5px; background: #272c34; border-radius: 999px; margin-top: 10px; overflow: hidden; }
+  .mini-bar span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+
+  /* Control groups */
+  .control-groups { display: flex; gap: 28px; flex-wrap: wrap; }
+  .control-group { display: flex; flex-direction: column; gap: 10px; }
+  .control-group + .control-group { padding-left: 28px; border-left: 1px solid var(--panel-border); }
+  .control-group .group-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .control-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
   button.action {
     display: inline-flex;
     align-items: center;
@@ -128,14 +154,41 @@
   button.action:active { transform: scale(0.97); }
   @media (hover: hover) and (pointer: fine) {
     button.action:hover { border-color: #3a414b; }
-    button.action.primary:hover, button.action.stop:hover, button.action.toggle-on:hover { filter: brightness(1.08); }
+    button.action.primary:hover, button.action.stop:hover { filter: brightness(1.08); }
   }
   button.action.primary { background: var(--accent); color: #0f1a12; border-color: var(--accent); font-weight: 600; }
   button.action.stop { background: var(--danger); color: #230f0c; border-color: var(--danger); font-weight: 600; }
-  button.action.toggle-on { background: var(--warn); color: #231c08; border-color: var(--warn); font-weight: 600; }
-  .players-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+
+  /* Toggle switch */
+  .switch-row { display: flex; align-items: center; gap: 10px; }
+  .switch-track {
+    width: 40px; height: 22px; border-radius: 999px;
+    background: #272c34; border: 1px solid var(--panel-border);
+    position: relative; cursor: pointer; flex-shrink: 0;
+    transition: background 160ms ease, border-color 160ms ease;
+  }
+  .switch-track .knob {
+    position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--muted);
+    transition: transform 200ms var(--ease-out), background 160ms ease;
+  }
+  .switch-track.on { background: var(--accent-dim); border-color: var(--accent); }
+  .switch-track.on .knob { transform: translateX(18px); background: var(--accent); }
+  .switch-label { font-size: 13px; }
+  .switch-label .sub { display: block; font-size: 12px; color: var(--muted); }
+
+  /* Charts */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .chart-head .range { font-size: 12px; color: var(--muted); }
+  canvas { max-height: 160px; }
+
+  /* Players + log row */
+  .lower-row { display: grid; grid-template-columns: 1fr 1.3fr; gap: 16px; align-items: start; }
+  .players-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
   .players-list li {
-    display: flex; align-items: center; gap: 8px; font-size: 14px;
+    display: flex; align-items: center; gap: 10px; font-size: 14px;
     opacity: 0; transform: translateY(6px);
     animation: player-in 240ms var(--ease-out) forwards;
   }
@@ -143,21 +196,36 @@
   .players-list li:nth-child(2) { animation-delay: 40ms; }
   .players-list li:nth-child(3) { animation-delay: 80ms; }
   .players-list li:nth-child(4) { animation-delay: 120ms; }
-  @keyframes player-in {
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes player-in { to { opacity: 1; transform: translateY(0); } }
   .players-list .avatar {
-    width: 22px; height: 22px; border-radius: 5px; background: #2a313a;
-    display: flex; align-items: center; justify-content: center; color: #6b7380; flex-shrink: 0;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12.5px; font-weight: 700; color: #0f1a12;
+    flex-shrink: 0; position: relative;
   }
-  .players-list .avatar svg { width: 13px; height: 13px; }
-  .players-empty { color: var(--muted); font-size: 13px; }
+  .players-list .avatar .online-dot {
+    position: absolute; bottom: -1px; right: -1px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--panel);
+  }
+  .player-name { font-weight: 500; }
+  .player-sub { display: block; font-size: 12px; color: var(--muted); font-weight: 400; }
+  .players-empty-slots { color: #7d8694; font-size: 12.5px; margin-top: 4px; }
+
+  .log-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .log-filters { display: flex; gap: 6px; }
+  .log-filter-btn {
+    background: none; border: 1px solid var(--panel-border); color: var(--muted);
+    font-size: 12px; padding: 5px 10px; border-radius: 999px; cursor: pointer;
+    transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+  }
+  .log-filter-btn.active { background: #22272e; color: var(--text); border-color: #3a414b; }
   .log-box {
     background: #0b0d10;
     border: 1px solid var(--panel-border);
     border-radius: 6px;
     padding: 10px 12px;
-    height: 220px;
+    height: 190px;
     overflow-y: auto;
     font-family: "Cascadia Code", "Consolas", monospace;
     font-size: 12.5px;
@@ -172,14 +240,41 @@
   .log-box::-webkit-scrollbar-thumb:hover { background: #4a5260; }
   .log-box .ts { color: #7d8694; margin-right: 6px; }
   .log-box .lvl-warn { color: var(--warn); }
-  .log-box .lvl-info { color: #7aa7d6; }
-  canvas { max-height: 160px; }
+  .log-box .lvl-info { color: var(--info); }
+  .log-box div[hidden] { display: none; }
+
+  .console-row { display: flex; gap: 8px; margin-top: 10px; }
+  .console-row input {
+    flex: 1;
+    background: #0b0d10;
+    border: 1px solid var(--panel-border);
+    color: var(--muted);
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 12.5px;
+  }
+  .console-row input::placeholder { color: #7d8694; }
+  .console-row button {
+    background: #22272e; border: 1px solid var(--panel-border); color: #7d8694;
+    padding: 0 14px; border-radius: 6px; font-size: 12.5px; cursor: not-allowed;
+  }
+  .soon-badge {
+    display: inline-block; font-size: 11px; color: #7d8694;
+    border: 1px solid #2c333c; padding: 1px 6px; border-radius: 999px; margin-left: 6px;
+  }
+
   .mock-note {
-    grid-column: 1 / -1;
     font-size: 12px;
     color: var(--muted);
     text-align: center;
     padding-top: 4px;
+  }
+
+  @media (max-width: 900px) {
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+    .charts-row, .lower-row { grid-template-columns: 1fr; }
+    .control-group + .control-group { border-left: none; padding-left: 0; }
   }
 </style>
 </head>
@@ -197,44 +292,108 @@
 </header>
 
 <main>
-  <div class="card full">
-    <h2>Controles</h2>
-    <div class="controls">
-      <button class="action primary"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Start</button>
-      <button class="action stop"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>Stop</button>
-      <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>Restart</button>
-      <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>Backup ahora</button>
-      <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 18H6a4 4 0 1 1 .5-7.97A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 2 9z"/><path d="M12 12v6M9.5 15.5 12 13l2.5 2.5"/></svg>Backup offsite</button>
-      <button class="action toggle-on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Horario: desactivado (activar)</button>
+
+  <div class="tiles">
+    <div class="card tile">
+      <div class="tile-label">Estado</div>
+      <div class="tile-value">En línea</div>
+      <div class="tile-sub">Último evento: Saved the game</div>
+    </div>
+    <div class="card tile">
+      <div class="tile-label">Jugadores</div>
+      <div class="tile-value">2 <span class="unit">/ 8</span></div>
+      <div class="mini-bar"><span style="width:25%"></span></div>
+    </div>
+    <div class="card tile">
+      <div class="tile-label">CPU</div>
+      <div class="tile-value">20<span class="unit">%</span></div>
+      <div class="tile-sub">Prom. 20 min: 27%</div>
+    </div>
+    <div class="card tile">
+      <div class="tile-label">RAM de Java</div>
+      <div class="tile-value">4.0<span class="unit">GB</span></div>
+      <div class="tile-sub">VM total: 5.0 GB</div>
+    </div>
+    <div class="card tile">
+      <div class="tile-label">TPS <span class="soon-badge">Próximamente</span></div>
+      <div class="tile-soon">Requiere un mod de métricas no incluido en el pack</div>
     </div>
   </div>
 
   <div class="card">
-    <h2>Jugadores conectados (2/8)</h2>
-    <ul class="players-list">
-      <li><span class="avatar"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></span> Guicho</li>
-      <li><span class="avatar"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg></span> Amigo1</li>
-    </ul>
+    <div class="control-groups">
+      <div class="control-group">
+        <div class="group-label">Servidor</div>
+        <div class="control-row">
+          <button class="action primary"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Start</button>
+          <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>Restart</button>
+          <button class="action stop"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>Stop</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="group-label">Respaldos</div>
+        <div class="control-row">
+          <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>Backup ahora</button>
+          <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 18H6a4 4 0 1 1 .5-7.97A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 2 9z"/><path d="M12 12v6M9.5 15.5 12 13l2.5 2.5"/></svg>Backup offsite</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="group-label">Automatización</div>
+        <div class="switch-row">
+          <span class="switch-track" id="scheduleSwitch"><span class="knob"></span></span>
+          <span class="switch-label">Horario automático<span class="sub">Desactivado</span></span>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="card">
-    <h2>Uso de CPU</h2>
-    <canvas id="cpuChart"></canvas>
+  <div class="charts-row">
+    <div class="card">
+      <div class="chart-head"><h2 style="margin:0">Uso de CPU</h2><span class="range">Últimos 20 min</span></div>
+      <canvas id="cpuChart"></canvas>
+    </div>
+    <div class="card">
+      <div class="chart-head"><h2 style="margin:0">Uso de RAM</h2><span class="range">VM total vs Java</span></div>
+      <canvas id="ramChart"></canvas>
+    </div>
   </div>
 
-  <div class="card">
-    <h2>Uso de RAM (VM vs Java)</h2>
-    <canvas id="ramChart"></canvas>
-  </div>
+  <div class="lower-row">
+    <div class="card">
+      <h2>Jugadores conectados (2/8)</h2>
+      <ul class="players-list">
+        <li>
+          <span class="avatar" style="background:#5fbf77">G<span class="online-dot"></span></span>
+          <span><span class="player-name">Guicho</span><span class="player-sub">Se unió a las 02:41</span></span>
+        </li>
+        <li>
+          <span class="avatar" style="background:#7aa7d6">A<span class="online-dot"></span></span>
+          <span><span class="player-name">Amigo1</span><span class="player-sub">Se unió a las 02:41</span></span>
+        </li>
+      </ul>
+      <div class="players-empty-slots">6 plazas libres</div>
+    </div>
 
-  <div class="card">
-    <h2>Log en vivo</h2>
-    <div class="log-box" id="logBox">
-      <div><span class="ts">02:41:12</span><span class="lvl-info">[INFO]</span> Guicho joined the game</div>
-      <div><span class="ts">02:41:40</span><span class="lvl-info">[INFO]</span> Amigo1 joined the game</div>
-      <div><span class="ts">02:42:03</span><span class="lvl-warn">[WARN]</span> Can't keep up! Is the server overloaded?</div>
-      <div><span class="ts">02:42:55</span><span class="lvl-info">[INFO]</span> &lt;Guicho&gt; alguien tiene hierro?</div>
-      <div><span class="ts">02:43:10</span><span class="lvl-info">[INFO]</span> Saved the game</div>
+    <div class="card">
+      <div class="log-head">
+        <h2 style="margin:0">Log en vivo</h2>
+        <div class="log-filters">
+          <button class="log-filter-btn active" data-filter="all">Todo</button>
+          <button class="log-filter-btn" data-filter="info">Info</button>
+          <button class="log-filter-btn" data-filter="warn">Warn</button>
+        </div>
+      </div>
+      <div class="log-box" id="logBox">
+        <div data-level="info"><span class="ts">02:41:12</span><span class="lvl-info">[INFO]</span> Guicho joined the game</div>
+        <div data-level="info"><span class="ts">02:41:40</span><span class="lvl-info">[INFO]</span> Amigo1 joined the game</div>
+        <div data-level="warn"><span class="ts">02:42:03</span><span class="lvl-warn">[WARN]</span> Can't keep up! Is the server overloaded?</div>
+        <div data-level="info"><span class="ts">02:42:55</span><span class="lvl-info">[INFO]</span> &lt;Guicho&gt; alguien tiene hierro?</div>
+        <div data-level="info"><span class="ts">02:43:10</span><span class="lvl-info">[INFO]</span> Saved the game</div>
+      </div>
+      <div class="console-row">
+        <input type="text" placeholder="Enviar comando, ej: list" disabled>
+        <button disabled>Enviar<span class="soon-badge">Próximamente</span></button>
+      </div>
     </div>
   </div>
 
@@ -242,17 +401,37 @@
 </main>
 
 <script>
-  const labels = Array.from({length: 20}, (_, i) => `${i}m`);
-  const cpuData = labels.map(() => Math.round(10 + Math.random() * 35));
-  const ramVmData = labels.map(() => Math.round(5 + Math.random() * 2));
+  document.getElementById('scheduleSwitch').addEventListener('click', function () {
+    this.classList.toggle('on');
+    const sub = this.nextElementSibling.querySelector('.sub');
+    sub.textContent = this.classList.contains('on') ? 'Activado (8am - medianoche)' : 'Desactivado';
+  });
+
+  document.querySelectorAll('.log-filter-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const filter = this.dataset.filter;
+      document.querySelectorAll('#logBox > div').forEach(function (line) {
+        line.hidden = filter !== 'all' && line.dataset.level !== filter;
+      });
+    });
+  });
+
+  const minuteLabels = Array.from({length: 20}, (_, i) => {
+    const minsAgo = 19 - i;
+    return minsAgo === 0 ? 'ahora' : `hace ${minsAgo} min`;
+  });
+  const cpuData = minuteLabels.map(() => Math.round(10 + Math.random() * 35));
+  const ramVmData = minuteLabels.map(() => Math.round(5 + Math.random() * 2));
   const ramJavaData = ramVmData.map(v => Math.round(v * 0.7));
 
   const chartOpts = {
     responsive: true,
     plugins: { legend: { labels: { color: '#8b939f', font: { size: 11 } } } },
     scales: {
-      x: { ticks: { color: '#5a6270', font: { size: 10 } }, grid: { color: '#1e2329' } },
-      y: { ticks: { color: '#5a6270', font: { size: 10 } }, grid: { color: '#1e2329' } }
+      x: { ticks: { color: '#7d8694', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 5 }, grid: { color: '#1e2329' } },
+      y: { ticks: { color: '#7d8694', font: { size: 10 } }, grid: { color: '#1e2329' } }
     }
   };
 
@@ -266,14 +445,14 @@
   const cpuCtx = document.getElementById('cpuChart').getContext('2d');
   new Chart(cpuCtx, {
     type: 'line',
-    data: { labels, datasets: [{ label: 'CPU %', data: cpuData, borderColor: '#5fbf77', backgroundColor: fillGradient(cpuCtx, '#5fbf77'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 }] },
+    data: { labels: minuteLabels, datasets: [{ label: 'CPU %', data: cpuData, borderColor: '#5fbf77', backgroundColor: fillGradient(cpuCtx, '#5fbf77'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 }] },
     options: chartOpts
   });
 
   const ramCtx = document.getElementById('ramChart').getContext('2d');
   new Chart(ramCtx, {
     type: 'line',
-    data: { labels, datasets: [
+    data: { labels: minuteLabels, datasets: [
       { label: 'VM total (GB)', data: ramVmData, borderColor: '#7aa7d6', backgroundColor: fillGradient(ramCtx, '#7aa7d6'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 },
       { label: 'Java (GB)', data: ramJavaData, borderColor: '#e0b341', backgroundColor: fillGradient(ramCtx, '#e0b341'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 }
     ] },
