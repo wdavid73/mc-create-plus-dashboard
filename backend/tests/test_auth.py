@@ -1,6 +1,7 @@
 import bcrypt
 from fastapi.testclient import TestClient
 from backend.app.main import app
+from backend.tests.conftest import authed_client  # fixture: logged-in TestClient, see Task 2 pattern
 
 def _client(monkeypatch):
     monkeypatch.setenv("ADMIN_USERNAME", "admin")
@@ -30,3 +31,9 @@ def test_sixth_failed_attempt_in_window_is_locked_out(monkeypatch):
         client.post("/api/login", json={"username": "admin", "password": "wrong"})
     resp = client.post("/api/login", json={"username": "admin", "password": "wrong"})
     assert resp.status_code == 429
+
+def test_players_endpoint_error_never_leaks_rcon_password(monkeypatch, authed_client):
+    monkeypatch.setenv("MC_SERVER_PROPERTIES", "/nonexistent/server.properties")
+    resp = authed_client.get("/api/players")
+    assert resp.status_code >= 400
+    assert "rcon.password" not in resp.text

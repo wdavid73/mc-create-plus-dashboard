@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.app import metrics
 from backend.app.auth import router as auth_router
 from backend.app.control import router as control_router
+from backend.app.game import router as game_router
 
 
 @asynccontextmanager
@@ -33,6 +34,7 @@ def health():
 app.include_router(auth_router)
 app.include_router(control_router)
 app.include_router(metrics.router)
+app.include_router(game_router)
 
 
 # Mounted last so it never shadows /api routes added by later tasks.
