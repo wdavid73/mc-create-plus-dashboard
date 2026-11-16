@@ -1,3 +1,4 @@
+import subprocess
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from backend.app.main import app
@@ -52,3 +53,20 @@ def test_unknown_single_segment_action_rejected_by_whitelist(authed_client):
         resp = authed_client.post("/api/control/not-a-real-action")
     assert resp.status_code == 400
     mock_run.assert_not_called()
+
+
+def test_status_returns_503_when_systemctl_missing(authed_client):
+    with patch("backend.app.control.subprocess.run", side_effect=FileNotFoundError("systemctl not found")):
+        resp = authed_client.get("/api/status")
+    assert resp.status_code == 503
+    assert resp.json() == {"detail": "status unavailable"}
+
+
+def test_status_returns_503_when_subprocess_errors(authed_client):
+    with patch(
+        "backend.app.control.subprocess.run",
+        side_effect=subprocess.SubprocessError("boom"),
+    ):
+        resp = authed_client.get("/api/status")
+    assert resp.status_code == 503
+    assert resp.json() == {"detail": "status unavailable"}

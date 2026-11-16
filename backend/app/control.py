@@ -39,9 +39,12 @@ def control(action: str, user: str = Depends(require_session)):
 
 @router.get("/api/status")
 def status(user: str = Depends(require_session)):
-    result = subprocess.run(
-        ["systemctl", "is-active", os.environ["MC_SERVICE_NAME"]],
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            ["systemctl", "is-active", os.environ["MC_SERVICE_NAME"]],
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        raise HTTPException(status_code=503, detail="status unavailable")
     return {"status": result.stdout.strip()}
