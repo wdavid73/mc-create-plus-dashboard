@@ -41,11 +41,14 @@ def get_players(user: str = Depends(require_session)):
 
 @router.get("/api/logs/recent")
 def get_recent_logs(user: str = Depends(require_session)):
-    result = subprocess.run(
-        ["journalctl", "-u", os.environ["MC_SERVICE_NAME"], "-n", RECENT_LOG_LINES, "--no-pager", "-o", "cat"],
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            ["journalctl", "-u", os.environ["MC_SERVICE_NAME"], "-n", RECENT_LOG_LINES, "--no-pager", "-o", "cat"],
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        raise HTTPException(status_code=503, detail="logs unavailable")
     return {"lines": result.stdout.splitlines()}
 
 
@@ -79,16 +82,20 @@ async def ws_logs(websocket: WebSocket):
 
     process = None
     try:
-        process = await asyncio.create_subprocess_exec(
-            "journalctl",
-            "-u",
-            os.environ["MC_SERVICE_NAME"],
-            "-f",
-            "-o",
-            "cat",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL,
-        )
+        try:
+            process = await asyncio.create_subprocess_exec(
+                "journalctl",
+                "-u",
+                os.environ["MC_SERVICE_NAME"],
+                "-f",
+                "-o",
+                "cat",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+        except (OSError, subprocess.SubprocessError):
+            await websocket.close(code=1011)
+            return
 
         while True:
             line = await process.stdout.readline()
@@ -96,7 +103,7 @@ async def ws_logs(websocket: WebSocket):
                 break
             try:
                 await websocket.send_text(line.decode("utf8", errors="replace").rstrip("\n"))
-            except WebSocketDisconnect:
+            except (WebSocketDisconnect, RuntimeError):
                 break
     except WebSocketDisconnect:
         pass
