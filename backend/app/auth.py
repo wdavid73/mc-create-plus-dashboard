@@ -1,0 +1,101 @@
+import os
+import time
+
+import bcrypt
+from fastapi import APIRouter, HTTPException, Request, Response
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from pydantic import BaseModel
+
+router = APIRouter()
+
+SESSION_COOKIE_NAME = "session"
+SESSION_MAX_AGE_SECONDS = 86400
+
+LOCKOUT_WINDOW_SECONDS = 15 * 60
+LOCKOUT_THRESHOLD = 5
+
+# In-memory only: failed-attempt timestamps per client IP, used purely to
+# throttle brute-force login attempts within a single process. This does not
+# persist across restarts, is not shared across multiple worker processes,
+# and is not a durable audit log of failed logins.
+_failed_attempts: dict[str, list[float]] = {}
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+def _get_serializer() -> URLSafeTimedSerializer:
+    secret = os.environ["SESSION_SECRET_KEY"]
+    return URLSafeTimedSerializer(secret)
+
+
+def _prune_old_attempts(client_id: str, now: float) -> list[float]:
+    attempts = [t for t in _failed_attempts.get(client_id, []) if now - t < LOCKOUT_WINDOW_SECONDS]
+    if attempts:
+        _failed_attempts[client_id] = attempts
+    else:
+        _failed_attempts.pop(client_id, None)
+    return attempts
+
+
+@router.post("/api/login")
+def login(body: LoginRequest, request: Request, response: Response):
+    client_id = request.client.host if request.client else "unknown"
+    now = time.time()
+
+    attempts = _prune_old_attempts(client_id, now)
+    if len(attempts) >= LOCKOUT_THRESHOLD:
+        raise HTTPException(status_code=429, detail="Too many failed login attempts. Try again later.")
+
+    admin_username = os.environ.get("ADMIN_USERNAME", "")
+    admin_password_hash = os.environ.get("ADMIN_PASSWORD_HASH", "")
+
+    valid = body.username == admin_username and admin_password_hash and bcrypt.checkpw(
+        body.password.encode("utf-8"), admin_password_hash.encode("utf-8")
+    )
+
+    if not valid:
+        attempts.append(now)
+        _failed_attempts[client_id] = attempts
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    # Successful login clears this client's failed-attempt history.
+    _failed_attempts.pop(client_id, None)
+
+    serializer = _get_serializer()
+    token = serializer.dumps({"user": body.username})
+    response.set_cookie(
+        key=SESSION_COOKIE_NAME,
+        value=token,
+        httponly=True,
+        secure=True,
+        samesite="strict",
+        max_age=SESSION_MAX_AGE_SECONDS,
+    )
+    return {"status": "ok"}
+
+
+@router.post("/api/logout")
+def logout(response: Response):
+    response.delete_cookie(key=SESSION_COOKIE_NAME, httponly=True, secure=True, samesite="strict")
+    return {"status": "ok"}
+
+
+def require_session(request: Request) -> str:
+    token = request.cookies.get(SESSION_COOKIE_NAME)
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    serializer = _get_serializer()
+    try:
+        payload = serializer.loads(token, max_age=SESSION_MAX_AGE_SECONDS)
+    except (BadSignature, SignatureExpired):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    user = payload.get("user")
+    if not user:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    return user
