@@ -48,13 +48,16 @@ def _prune_old_attempts(client_id: str, now: float) -> list[float]:
 
 def _get_client_id(request: Request) -> str:
     # Behind a reverse proxy (e.g. Caddy), request.client.host is the proxy's
-    # own address, not the real client. Caddy forwards the real client IP via
-    # X-Forwarded-For; prefer the first (left-most) address there, falling
-    # back to request.client.host when the header is absent (e.g. in tests).
+    # own address, not the real client. Caddy appends the real client IP it
+    # observed to X-Forwarded-For; the LAST entry is the one our one and only
+    # trusted hop (Caddy) added, and is never attacker-controlled. The FIRST
+    # entry is whatever the original client sent in that header, which an
+    # attacker can set to anything — trusting it would let them pick a fresh
+    # fake IP on every request and defeat the lockout entirely.
     forwarded_for = request.headers.get("x-forwarded-for", "")
-    first_hop = forwarded_for.split(",")[0].strip()
-    if first_hop:
-        return first_hop
+    hops = [h.strip() for h in forwarded_for.split(",") if h.strip()]
+    if hops:
+        return hops[-1]
     return request.client.host if request.client else "unknown"
 
 

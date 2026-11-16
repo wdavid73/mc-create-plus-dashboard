@@ -1,1 +1,10 @@
 .worktrees/
+.superpowers/
+.env
+*.env
+!backend/.env.example
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+backend/venv/
