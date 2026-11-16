@@ -1,0 +1,7 @@
+# Allow the unprivileged `dashboard` service user to control and inspect the
+# Minecraft server service without a password, and nothing else.
+#
+# NOTE: these are the standard Ubuntu absolute paths for systemctl/journalctl.
+# Confirm with `which systemctl journalctl` on the real VM before installing
+# this file, and adjust the paths below if they differ.
+dashboard ALL=(root) NOPASSWD: /usr/bin/systemctl start mc-create-plus, /usr/bin/systemctl stop mc-create-plus, /usr/bin/systemctl restart mc-create-plus, /usr/bin/systemctl status mc-create-plus, /usr/bin/journalctl -u mc-create-plus *

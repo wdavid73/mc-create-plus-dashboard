@@ -1,0 +1,14 @@
+[Unit]
+Description=Create+ Dashboard
+After=network.target
+
+[Service]
+User=dashboard
+WorkingDirectory=/opt/dashboard
+EnvironmentFile=/opt/dashboard/.env
+ExecStart=/opt/dashboard/venv/bin/uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
