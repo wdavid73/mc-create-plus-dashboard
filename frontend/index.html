@@ -311,10 +311,10 @@
     <span class="brand-mark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/></svg></span>
     <div>
       <h1 style="display:inline">Create+ Dashboard</h1>
-      <span class="status-pill"><span class="dot"></span> En línea</span>
+      <span class="status-pill" id="statusPill"><span class="dot"></span> <span id="statusPillText">En línea</span></span>
     </div>
   </div>
-  <button class="logout-btn">Cerrar sesión</button>
+  <button class="logout-btn" id="logoutBtn">Cerrar sesión</button>
 </header>
 
 <main>
@@ -322,23 +322,23 @@
   <div class="tiles">
     <div class="card tile">
       <div class="tile-label">Estado</div>
-      <div class="tile-value">En línea</div>
-      <div class="tile-sub">Último evento: Saved the game</div>
+      <div class="tile-value" id="estadoTileValue">En línea</div>
+      <div class="tile-sub" id="estadoTileSub">&nbsp;</div>
     </div>
     <div class="card tile">
       <div class="tile-label">Jugadores</div>
-      <div class="tile-value">2 <span class="unit">/ 8</span></div>
-      <div class="mini-bar"><span style="width:25%"></span></div>
+      <div class="tile-value"><span id="jugadoresOnline">0</span> <span class="unit">/ <span id="jugadoresMax">0</span></span></div>
+      <div class="mini-bar"><span id="jugadoresBar" style="width:0%"></span></div>
     </div>
     <div class="card tile">
       <div class="tile-label">CPU</div>
-      <div class="tile-value">20<span class="unit">%</span></div>
-      <div class="tile-sub">Prom. 20 min: 27%</div>
+      <div class="tile-value" id="cpuTileValue">0<span class="unit">%</span></div>
+      <div class="tile-sub">&nbsp;</div>
     </div>
     <div class="card tile">
       <div class="tile-label">RAM de Java</div>
-      <div class="tile-value">4.0<span class="unit">GB</span></div>
-      <div class="tile-sub">VM total: 5.0 GB</div>
+      <div class="tile-value" id="ramJavaTileValue">0.0<span class="unit">GB</span></div>
+      <div class="tile-sub" id="ramVmTileSub">&nbsp;</div>
     </div>
     <div class="card tile">
       <div class="tile-label">TPS <span class="soon-badge">Próximamente</span></div>
@@ -351,16 +351,16 @@
       <div class="control-group">
         <div class="group-label">Servidor</div>
         <div class="control-row">
-          <button class="action primary"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Start</button>
-          <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>Restart</button>
-          <button class="action stop"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>Stop</button>
+          <button class="action primary" data-action="start"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Start</button>
+          <button class="action" data-action="restart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>Restart</button>
+          <button class="action stop" data-action="stop"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>Stop</button>
         </div>
       </div>
       <div class="control-group">
         <div class="group-label">Respaldos</div>
         <div class="control-row">
-          <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>Backup ahora</button>
-          <button class="action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 18H6a4 4 0 1 1 .5-7.97A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 2 9z"/><path d="M12 12v6M9.5 15.5 12 13l2.5 2.5"/></svg>Backup offsite</button>
+          <button class="action" data-action="backup-now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>Backup ahora</button>
+          <button class="action" data-action="backup-offsite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 18H6a4 4 0 1 1 .5-7.97A5.5 5.5 0 0 1 17 9a4.5 4.5 0 0 1 2 9z"/><path d="M12 12v6M9.5 15.5 12 13l2.5 2.5"/></svg>Backup offsite</button>
         </div>
       </div>
       <div class="control-group">
@@ -386,26 +386,9 @@
 
   <div class="lower-row">
     <div class="card">
-      <h2>Jugadores conectados (2/8)</h2>
-      <ul class="players-list">
-        <li>
-          <span class="avatar" style="background:#5fbf77">G<span class="online-dot"></span></span>
-          <span class="player-info"><span class="player-name">Guicho</span><span class="player-sub">Se unió a las 02:41</span></span>
-          <span class="player-actions">
-            <button class="icon-btn" disabled title="Próximamente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-            <button class="icon-btn danger" disabled title="Próximamente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></button>
-          </span>
-        </li>
-        <li>
-          <span class="avatar" style="background:#7aa7d6">A<span class="online-dot"></span></span>
-          <span class="player-info"><span class="player-name">Amigo1</span><span class="player-sub">Se unió a las 02:41</span></span>
-          <span class="player-actions">
-            <button class="icon-btn" disabled title="Próximamente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
-            <button class="icon-btn danger" disabled title="Próximamente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></button>
-          </span>
-        </li>
-      </ul>
-      <div class="players-empty-slots">6 plazas libres</div>
+      <h2 id="playersHeading">Jugadores conectados (0/0)</h2>
+      <ul class="players-list" id="playersList"></ul>
+      <div class="players-empty-slots" id="playersEmptySlots"></div>
     </div>
 
     <div class="card">
@@ -417,13 +400,7 @@
           <button class="log-filter-btn" data-filter="warn">Warn</button>
         </div>
       </div>
-      <div class="log-box" id="logBox">
-        <div data-level="info"><span class="ts">02:41:12</span><span class="lvl-info">[INFO]</span> Guicho joined the game</div>
-        <div data-level="info"><span class="ts">02:41:40</span><span class="lvl-info">[INFO]</span> Amigo1 joined the game</div>
-        <div data-level="warn"><span class="ts">02:42:03</span><span class="lvl-warn">[WARN]</span> Can't keep up! Is the server overloaded?</div>
-        <div data-level="info"><span class="ts">02:42:55</span><span class="lvl-info">[INFO]</span> &lt;Guicho&gt; alguien tiene hierro?</div>
-        <div data-level="info"><span class="ts">02:43:10</span><span class="lvl-info">[INFO]</span> Saved the game</div>
-      </div>
+      <div class="log-box" id="logBox"></div>
       <div class="console-row">
         <input type="text" placeholder="Mensaje al chat del juego" disabled>
         <button disabled>Chat<span class="soon-badge">Próximamente</span></button>
@@ -471,35 +448,193 @@
     </div>
   </div>
 
-  <div class="mock-note">Vista de prueba con datos ficticios — sin backend conectado todavía.</div>
 </main>
 
 <script>
-  document.getElementById('scheduleSwitch').addEventListener('click', function () {
-    this.classList.toggle('on');
-    const sub = this.nextElementSibling.querySelector('.sub');
-    sub.textContent = this.classList.contains('on') ? 'Activado (8am - medianoche)' : 'Desactivado';
+  // ---- Logout ----
+  document.getElementById('logoutBtn').addEventListener('click', function () {
+    fetch('/api/logout', { method: 'POST' }).finally(function () {
+      window.location = '/login.html';
+    });
   });
+
+  // ---- Schedule toggle (schedule-on / schedule-off) ----
+  document.getElementById('scheduleSwitch').addEventListener('click', function () {
+    const track = this;
+    const sub = track.nextElementSibling.querySelector('.sub');
+    const turningOn = !track.classList.contains('on');
+
+    track.classList.toggle('on');
+    sub.textContent = turningOn ? 'Activado (8am - medianoche)' : 'Desactivado';
+
+    function revert() {
+      track.classList.toggle('on');
+      sub.textContent = turningOn ? 'Desactivado' : 'Activado (8am - medianoche)';
+    }
+
+    fetch('/api/control/' + (turningOn ? 'schedule-on' : 'schedule-off'), { method: 'POST' })
+      .then(function (resp) { if (!resp.ok) revert(); })
+      .catch(revert);
+  });
+
+  // ---- Servidor / Respaldos action buttons ----
+  document.querySelectorAll('button.action[data-action]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const action = btn.dataset.action;
+      btn.disabled = true;
+      fetch('/api/control/' + action, { method: 'POST' })
+        .catch(function () {})
+        .finally(function () { btn.disabled = false; });
+    });
+  });
+
+  // ---- Status polling ----
+  function updateStatus() {
+    fetch('/api/status').then(function (resp) {
+      return resp.ok ? resp.json() : null;
+    }).then(function (data) {
+      if (!data) return;
+      const isActive = data.status === 'active';
+      document.getElementById('statusPill').classList.toggle('offline', !isActive);
+      document.getElementById('statusPillText').textContent = isActive ? 'En línea' : 'Fuera de línea';
+      document.getElementById('estadoTileValue').textContent = isActive ? 'En línea' : 'Fuera de línea';
+      document.getElementById('estadoTileSub').textContent = 'Estado del servicio: ' + (data.status || 'desconocido');
+    }).catch(function () {});
+  }
+  updateStatus();
+  setInterval(updateStatus, 5000);
+
+  // ---- Log filters (applies to lines present now and appended later) ----
+  function applyLogFilter() {
+    const active = document.querySelector('.log-filter-btn.active');
+    const filter = active ? active.dataset.filter : 'all';
+    document.querySelectorAll('#logBox > div').forEach(function (line) {
+      line.hidden = filter !== 'all' && line.dataset.level !== filter;
+    });
+    return filter;
+  }
 
   document.querySelectorAll('.log-filter-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
-      const filter = this.dataset.filter;
-      document.querySelectorAll('#logBox > div').forEach(function (line) {
-        line.hidden = filter !== 'all' && line.dataset.level !== filter;
-      });
+      applyLogFilter();
     });
   });
 
-  const minuteLabels = Array.from({length: 20}, (_, i) => {
-    const minsAgo = 19 - i;
-    return minsAgo === 0 ? 'ahora' : `hace ${minsAgo} min`;
-  });
-  const cpuData = minuteLabels.map(() => Math.round(10 + Math.random() * 35));
-  const ramVmData = minuteLabels.map(() => Math.round(5 + Math.random() * 2));
-  const ramJavaData = ramVmData.map(v => Math.round(v * 0.7));
+  // ---- Live log: initial fetch + WebSocket ----
+  const logBox = document.getElementById('logBox');
 
+  function parseLogLine(raw) {
+    const match = raw.match(/^\[(\d{2}:\d{2}:\d{2})\]\s*\[[^\]]*\/(INFO|WARN|ERROR)\]:\s*(.*)$/);
+    if (match) {
+      return { ts: match[1], level: match[2].toLowerCase(), message: match[3] };
+    }
+    const now = new Date();
+    return { ts: now.toTimeString().slice(0, 8), level: 'info', message: raw };
+  }
+
+  function appendLogLine(raw) {
+    if (raw === '') return;
+    const parsed = parseLogLine(raw);
+    const level = parsed.level === 'warn' || parsed.level === 'error' ? 'warn' : 'info';
+
+    const div = document.createElement('div');
+    div.dataset.level = level;
+
+    const ts = document.createElement('span');
+    ts.className = 'ts';
+    ts.textContent = parsed.ts;
+
+    const lvl = document.createElement('span');
+    lvl.className = level === 'warn' ? 'lvl-warn' : 'lvl-info';
+    lvl.textContent = level === 'warn' ? '[WARN]' : '[INFO]';
+
+    div.appendChild(ts);
+    div.appendChild(lvl);
+    div.appendChild(document.createTextNode(' ' + parsed.message));
+
+    const activeBtn = document.querySelector('.log-filter-btn.active');
+    const activeFilter = activeBtn ? activeBtn.dataset.filter : 'all';
+    div.hidden = activeFilter !== 'all' && div.dataset.level !== activeFilter;
+
+    logBox.appendChild(div);
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  fetch('/api/logs/recent').then(function (resp) {
+    return resp.ok ? resp.json() : null;
+  }).then(function (data) {
+    if (!data) return;
+    data.lines.forEach(appendLogLine);
+    applyLogFilter();
+  }).catch(function () {});
+
+  const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const logSocket = new WebSocket(`${wsProtocol}//${location.host}/ws/logs`);
+  logSocket.addEventListener('message', function (event) {
+    appendLogLine(event.data);
+  });
+
+  // ---- Players list ----
+  const AVATAR_COLORS = ['#5fbf77', '#7aa7d6', '#e0b341', '#d9664f', '#a383d9', '#5fb8bf'];
+
+  function renderPlayers(data) {
+    const list = document.getElementById('playersList');
+    const players = data.players || [];
+    const online = data.online || 0;
+    const max = data.max || 0;
+
+    document.getElementById('playersHeading').textContent = `Jugadores conectados (${online}/${max})`;
+    document.getElementById('jugadoresOnline').textContent = online;
+    document.getElementById('jugadoresMax').textContent = max;
+    document.getElementById('jugadoresBar').style.width = (max > 0 ? Math.min(100, Math.round((online / max) * 100)) : 0) + '%';
+
+    const emptySlots = Math.max(0, max - online);
+    document.getElementById('playersEmptySlots').textContent = emptySlots > 0 ? `${emptySlots} plazas libres` : '';
+
+    list.innerHTML = '';
+    players.forEach(function (name, i) {
+      const li = document.createElement('li');
+      const avatar = document.createElement('span');
+      avatar.className = 'avatar';
+      avatar.style.background = AVATAR_COLORS[i % AVATAR_COLORS.length];
+      avatar.textContent = (name.charAt(0) || '?').toUpperCase();
+      const dot = document.createElement('span');
+      dot.className = 'online-dot';
+      avatar.appendChild(dot);
+
+      const info = document.createElement('span');
+      info.className = 'player-info';
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'player-name';
+      nameSpan.textContent = name;
+      info.appendChild(nameSpan);
+
+      const actions = document.createElement('span');
+      actions.className = 'player-actions';
+      actions.innerHTML =
+        '<button class="icon-btn" disabled title="Próximamente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>' +
+        '<button class="icon-btn danger" disabled title="Próximamente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg></button>';
+
+      li.appendChild(avatar);
+      li.appendChild(info);
+      li.appendChild(actions);
+      list.appendChild(li);
+    });
+  }
+
+  function updatePlayers() {
+    fetch('/api/players').then(function (resp) {
+      return resp.ok ? resp.json() : null;
+    }).then(function (data) {
+      if (data) renderPlayers(data);
+    }).catch(function () {});
+  }
+  updatePlayers();
+  setInterval(updatePlayers, 10000);
+
+  // ---- Charts ----
   const chartOpts = {
     responsive: true,
     plugins: { legend: { labels: { color: '#8b939f', font: { size: 11 } } } },
@@ -517,21 +652,59 @@
   }
 
   const cpuCtx = document.getElementById('cpuChart').getContext('2d');
-  new Chart(cpuCtx, {
+  const cpuChart = new Chart(cpuCtx, {
     type: 'line',
-    data: { labels: minuteLabels, datasets: [{ label: 'CPU %', data: cpuData, borderColor: '#5fbf77', backgroundColor: fillGradient(cpuCtx, '#5fbf77'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 }] },
+    data: { labels: [], datasets: [{ label: 'CPU %', data: [], borderColor: '#5fbf77', backgroundColor: fillGradient(cpuCtx, '#5fbf77'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 }] },
     options: chartOpts
   });
 
   const ramCtx = document.getElementById('ramChart').getContext('2d');
-  new Chart(ramCtx, {
+  const ramChart = new Chart(ramCtx, {
     type: 'line',
-    data: { labels: minuteLabels, datasets: [
-      { label: 'VM total (GB)', data: ramVmData, borderColor: '#7aa7d6', backgroundColor: fillGradient(ramCtx, '#7aa7d6'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 },
-      { label: 'Java (GB)', data: ramJavaData, borderColor: '#e0b341', backgroundColor: fillGradient(ramCtx, '#e0b341'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 }
+    data: { labels: [], datasets: [
+      { label: 'VM total (GB)', data: [], borderColor: '#7aa7d6', backgroundColor: fillGradient(ramCtx, '#7aa7d6'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 },
+      { label: 'Java (GB)', data: [], borderColor: '#e0b341', backgroundColor: fillGradient(ramCtx, '#e0b341'), fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2 }
     ] },
     options: chartOpts
   });
+
+  function formatTimeLabel(iso) {
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? iso : d.toTimeString().slice(0, 5);
+  }
+
+  function updateMetrics() {
+    fetch('/api/metrics').then(function (resp) {
+      return resp.ok ? resp.json() : null;
+    }).then(function (data) {
+      if (!data) return;
+      const labels = (data.labels || []).map(formatTimeLabel);
+
+      cpuChart.data.labels = labels;
+      cpuChart.data.datasets[0].data = data.cpu || [];
+      cpuChart.update();
+
+      ramChart.data.labels = labels;
+      ramChart.data.datasets[0].data = data.ram_vm_gb || [];
+      ramChart.data.datasets[1].data = data.ram_java_gb || [];
+      ramChart.update();
+
+      const cpu = data.cpu || [];
+      const ramVm = data.ram_vm_gb || [];
+      const ramJava = data.ram_java_gb || [];
+      if (cpu.length) {
+        document.getElementById('cpuTileValue').innerHTML = Math.round(cpu[cpu.length - 1]) + '<span class="unit">%</span>';
+      }
+      if (ramJava.length) {
+        document.getElementById('ramJavaTileValue').innerHTML = ramJava[ramJava.length - 1].toFixed(1) + '<span class="unit">GB</span>';
+      }
+      if (ramVm.length) {
+        document.getElementById('ramVmTileSub').textContent = 'VM total: ' + ramVm[ramVm.length - 1].toFixed(1) + ' GB';
+      }
+    }).catch(function () {});
+  }
+  updateMetrics();
+  setInterval(updateMetrics, 10000);
 </script>
 
 </body>

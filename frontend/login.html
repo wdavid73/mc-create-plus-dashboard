@@ -118,6 +118,7 @@
     transform: translateY(-4px);
     animation: error-in 220ms var(--ease-out) forwards;
   }
+  .error-box[hidden] { display: none !important; }
   .error-box svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--danger); }
   @keyframes error-in { to { opacity: 1; transform: translateY(0); } }
 
@@ -131,7 +132,7 @@
 </head>
 <body>
 
-<form class="login-card">
+<form class="login-card" id="loginForm">
   <div class="brand">
     <span class="brand-mark">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/></svg>
@@ -148,16 +149,50 @@
   <label for="password">Contraseña</label>
   <input id="password" name="password" type="password" autocomplete="current-password" required>
 
-  <!-- Estado de ejemplo: credenciales inválidas. Se muestra/oculta según la respuesta del backend. -->
-  <div class="error-box">
+  <!-- Estado de error: credenciales inválidas o demasiados intentos. Se muestra/oculta según la respuesta del backend. -->
+  <div class="error-box" id="errorBox" hidden>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
-    Usuario o contraseña incorrectos
+    <span id="errorText">Usuario o contraseña incorrectos</span>
   </div>
 
   <button class="submit-btn" type="submit">Iniciar sesión</button>
 
   <p class="footnote">Acceso restringido — servidor Create+</p>
 </form>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    const errorBox = document.getElementById('errorBox');
+    const errorText = document.getElementById('errorText');
+    errorBox.hidden = true;
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    }).then(function (resp) {
+      if (resp.ok) {
+        window.location = '/';
+        return;
+      }
+      if (resp.status === 429) {
+        errorText.textContent = 'Demasiados intentos, espera 15 minutos.';
+      } else if (resp.status === 401) {
+        errorText.textContent = 'Usuario o contraseña incorrectos';
+      } else {
+        errorText.textContent = 'Error inesperado, intenta de nuevo.';
+      }
+      errorBox.hidden = false;
+    }).catch(function () {
+      errorText.textContent = 'Error de conexión, intenta de nuevo.';
+      errorBox.hidden = false;
+    });
+  });
+</script>
 
 </body>
 </html>
