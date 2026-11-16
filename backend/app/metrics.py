@@ -67,7 +67,7 @@ def sample_once() -> tuple[float, float, float]:
 async def sampler_loop(target: MetricsBuffer, interval: float = SAMPLE_INTERVAL_SECONDS) -> None:
     while True:
         try:
-            cpu, ram_vm_gb, ram_java_gb = await asyncio.to_thread(sample_once)
+            cpu, ram_vm_gb, ram_java_gb = sample_once()
             target.append(cpu_pct=cpu, ram_vm_gb=ram_vm_gb, ram_java_gb=ram_java_gb)
         except Exception:
             # One bad sample must never kill the sampling loop.
