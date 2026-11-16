@@ -484,7 +484,7 @@
       btn.disabled = true;
       fetch('/api/control/' + action, { method: 'POST' })
         .catch(function () {})
-        .finally(function () { btn.disabled = false; });
+        .finally(function () { updateStatus(); });
     });
   });
 
@@ -499,7 +499,17 @@
       document.getElementById('statusPillText').textContent = isActive ? 'En línea' : 'Fuera de línea';
       document.getElementById('estadoTileValue').textContent = isActive ? 'En línea' : 'Fuera de línea';
       document.getElementById('estadoTileSub').textContent = 'Estado del servicio: ' + (data.status || 'desconocido');
+      updateServerButtons(isActive);
     }).catch(function () {});
+  }
+
+  function updateServerButtons(isActive) {
+    const startBtn = document.querySelector('button.action[data-action="start"]');
+    const stopBtn = document.querySelector('button.action[data-action="stop"]');
+    const restartBtn = document.querySelector('button.action[data-action="restart"]');
+    if (startBtn) startBtn.disabled = isActive;
+    if (stopBtn) stopBtn.disabled = !isActive;
+    if (restartBtn) restartBtn.disabled = !isActive;
   }
   updateStatus();
   setInterval(updateStatus, 5000);
