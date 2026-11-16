@@ -88,6 +88,9 @@ echo "==> Installing systemd unit"
 cp "$REPO_ROOT/deploy/dashboard.service" /etc/systemd/system/dashboard.service
 systemctl daemon-reload
 systemctl enable --now dashboard
+# enable --now is a no-op if the unit is already running, so restart explicitly
+# to make sure re-runs (redeploys) actually pick up the new code.
+systemctl restart dashboard
 
 echo "==> Ensuring Caddy is installed"
 if ! command -v caddy >/dev/null 2>&1; then
