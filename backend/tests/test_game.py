@@ -32,6 +32,46 @@ def test_recent_logs_returns_503_when_subprocess_errors(authed_client):
     assert resp.json() == {"detail": "logs unavailable"}
 
 
+def test_game_command_runs_whitelisted_rcon_command(authed_client):
+    with patch("backend.app.game.send_rcon_command", return_value="Set the time to 1000") as mock_rcon:
+        resp = authed_client.post("/api/game/command/time-day")
+    mock_rcon.assert_called_once_with("time set day")
+    assert resp.status_code == 200
+    assert resp.json() == {"ok": True, "output": "Set the time to 1000"}
+
+
+def test_game_command_rejects_unknown_action(authed_client):
+    resp = authed_client.post("/api/game/command/time-travel")
+    assert resp.status_code == 400
+
+
+def test_game_command_returns_503_when_rcon_unavailable(authed_client):
+    with patch("backend.app.game.send_rcon_command", side_effect=RuntimeError("rcon unavailable")):
+        resp = authed_client.post("/api/game/command/weather-clear")
+    assert resp.status_code == 503
+
+
+def test_tp_sends_rcon_command_with_both_players(authed_client):
+    with patch("backend.app.game.send_rcon_command", return_value="Teleported Amigo1 to Guicho") as mock_rcon:
+        resp = authed_client.post("/api/game/tp", json={"from_player": "Amigo1", "to_player": "Guicho"})
+    mock_rcon.assert_called_once_with("tp Amigo1 Guicho")
+    assert resp.status_code == 200
+    assert resp.json() == {"ok": True, "output": "Teleported Amigo1 to Guicho"}
+
+
+def test_tp_rejects_invalid_player_name(authed_client):
+    with patch("backend.app.game.send_rcon_command") as mock_rcon:
+        resp = authed_client.post("/api/game/tp", json={"from_player": "Amigo1 extra", "to_player": "Guicho"})
+    mock_rcon.assert_not_called()
+    assert resp.status_code == 400
+
+
+def test_tp_returns_503_when_rcon_unavailable(authed_client):
+    with patch("backend.app.game.send_rcon_command", side_effect=RuntimeError("rcon unavailable")):
+        resp = authed_client.post("/api/game/tp", json={"from_player": "Amigo1", "to_player": "Guicho"})
+    assert resp.status_code == 503
+
+
 def test_ws_logs_closes_with_1011_when_journalctl_fails_to_launch(authed_client):
     # starlette's TestClient.websocket_connect always upgrades against
     # "ws://testserver", ignoring the https base_url used for the plain

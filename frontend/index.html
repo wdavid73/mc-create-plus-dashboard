@@ -167,6 +167,20 @@
   }
   button.action:disabled:active { transform: none; }
 
+  /* TP menu */
+  .tp-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .tp-row select {
+    background: #0b0d10;
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    min-width: 140px;
+  }
+  .tp-row .tp-arrow { color: var(--muted); flex-shrink: 0; }
+  .tp-hint { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
   /* Toggle switch */
   .switch-row { display: flex; align-items: center; gap: 10px; }
   .switch-track {
@@ -378,7 +392,28 @@
           <span class="switch-label">Horario automático<span class="sub">Desactivado</span></span>
         </div>
       </div>
+      <div class="control-group">
+        <div class="group-label">Mundo</div>
+        <div class="control-row">
+          <button class="action" data-game-action="time-day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>Hacer de día</button>
+          <button class="action" data-game-action="time-night"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Hacer de noche</button>
+          <button class="action" data-game-action="weather-clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.4-2"/><path d="M6.1 8.02A5 5 0 0 0 7 18"/><path d="M6 20v-1M10 20v-1M14 20v-1"/></svg>Limpiar clima</button>
+        </div>
+      </div>
     </div>
+  </div>
+
+  <div class="card">
+    <div class="group-label" style="margin-bottom:10px">Teletransportar jugador</div>
+    <div class="tp-row">
+      <select id="tpFrom"><option value="">Jugador</option></select>
+      <span class="tp-arrow">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </span>
+      <select id="tpTo"><option value="">hacia jugador</option></select>
+      <button class="action primary" id="tpSubmit" disabled>Teletransportar</button>
+    </div>
+    <div class="tp-hint" id="tpHint">Conéctate con al menos 2 jugadores en línea para usar el TP.</div>
   </div>
 
   <div class="charts-row">
@@ -493,6 +528,17 @@
       fetch('/api/control/' + action, { method: 'POST' })
         .catch(function () {})
         .finally(function () { updateStatus(); });
+    });
+  });
+
+  // ---- Mundo quick commands (day/night/weather) ----
+  document.querySelectorAll('button.action[data-game-action]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const action = btn.dataset.gameAction;
+      btn.disabled = true;
+      fetch('/api/game/command/' + action, { method: 'POST' })
+        .catch(function () {})
+        .finally(function () { btn.disabled = false; });
     });
   });
 
@@ -640,7 +686,63 @@
       li.appendChild(actions);
       list.appendChild(li);
     });
+
+    renderTpOptions(players);
   }
+
+  // ---- TP menu ----
+  const tpFrom = document.getElementById('tpFrom');
+  const tpTo = document.getElementById('tpTo');
+  const tpSubmit = document.getElementById('tpSubmit');
+  const tpHint = document.getElementById('tpHint');
+
+  function renderTpOptions(players) {
+    [tpFrom, tpTo].forEach(function (select) {
+      const previous = select.value;
+      const placeholder = select.options[0];
+      select.innerHTML = '';
+      select.appendChild(placeholder);
+      players.forEach(function (name) {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+      if (players.includes(previous)) select.value = previous;
+    });
+
+    const enoughPlayers = players.length >= 2;
+    tpFrom.disabled = !enoughPlayers;
+    tpTo.disabled = !enoughPlayers;
+    tpHint.textContent = enoughPlayers
+      ? ''
+      : 'Conéctate con al menos 2 jugadores en línea para usar el TP.';
+    updateTpSubmitState();
+  }
+
+  function updateTpSubmitState() {
+    const from = tpFrom.value;
+    const to = tpTo.value;
+    tpSubmit.disabled = !from || !to || from === to;
+    tpHint.textContent = from && to && from === to ? 'Elige dos jugadores distintos.' : tpHint.textContent;
+  }
+
+  tpFrom.addEventListener('change', updateTpSubmitState);
+  tpTo.addEventListener('change', updateTpSubmitState);
+
+  tpSubmit.addEventListener('click', function () {
+    const from_player = tpFrom.value;
+    const to_player = tpTo.value;
+    if (!from_player || !to_player || from_player === to_player) return;
+    tpSubmit.disabled = true;
+    fetch('/api/game/tp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from_player: from_player, to_player: to_player }),
+    })
+      .catch(function () {})
+      .finally(function () { updateTpSubmitState(); });
+  });
 
   function updatePlayers() {
     fetch('/api/players').then(function (resp) {

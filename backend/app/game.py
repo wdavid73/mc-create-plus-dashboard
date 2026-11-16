@@ -5,6 +5,7 @@ import subprocess
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect
 from itsdangerous import BadSignature, SignatureExpired
+from pydantic import BaseModel
 
 from backend.app.auth import SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS, _get_serializer, require_session
 from backend.app.rcon import send_rcon_command
@@ -13,7 +14,23 @@ router = APIRouter()
 
 _LIST_PATTERN = re.compile(r"There are (\d+) of a max of (\d+) players online:(.*)")
 
+# Minecraft usernames are 1-16 characters of [A-Za-z0-9_]. Enforcing this
+# before building an RCON command string is what keeps a crafted name (one
+# containing a space or newline) from injecting a second command.
+_PLAYER_NAME_PATTERN = re.compile(r"^\w{1,16}$")
+
 RECENT_LOG_LINES = "50"
+
+# Whitelist of permitted one-shot world commands. The key is the URL path
+# segment supplied by the (authenticated) caller; the value is the exact
+# RCON command sent. Nothing outside this dict's keys ever reaches
+# send_rcon_command, and the command string is always a fixed literal here,
+# never built from the raw path parameter.
+GAME_COMMANDS: dict[str, str] = {
+    "time-day": "time set day",
+    "time-night": "time set night",
+    "weather-clear": "weather clear",
+}
 
 
 def parse_player_list(raw: str) -> dict:
@@ -37,6 +54,34 @@ def get_players(user: str = Depends(require_session)):
     except RuntimeError:
         raise HTTPException(status_code=503, detail="rcon unavailable")
     return parse_player_list(raw)
+
+
+@router.post("/api/game/command/{action}")
+def run_game_command(action: str, user: str = Depends(require_session)):
+    if action not in GAME_COMMANDS:
+        raise HTTPException(status_code=400, detail="unknown action")
+    try:
+        output = send_rcon_command(GAME_COMMANDS[action])
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="rcon unavailable")
+    return {"ok": True, "output": output}
+
+
+class TeleportRequest(BaseModel):
+    from_player: str
+    to_player: str
+
+
+@router.post("/api/game/tp")
+def teleport_player(body: TeleportRequest, user: str = Depends(require_session)):
+    for name in (body.from_player, body.to_player):
+        if not _PLAYER_NAME_PATTERN.match(name):
+            raise HTTPException(status_code=400, detail="invalid player name")
+    try:
+        output = send_rcon_command(f"tp {body.from_player} {body.to_player}")
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="rcon unavailable")
+    return {"ok": True, "output": output}
 
 
 @router.get("/api/logs/recent")
