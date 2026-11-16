@@ -1,7 +1,15 @@
-# Allow the unprivileged `dashboard` service user to control and inspect the
-# Minecraft server service without a password, and nothing else.
+# Allow the unprivileged `dashboard` service user to control the Minecraft
+# server via mc-ctl, without a password, and nothing else.
 #
-# NOTE: these are the standard Ubuntu absolute paths for systemctl/journalctl.
-# Confirm with `which systemctl journalctl` on the real VM before installing
-# this file, and adjust the paths below if they differ.
-dashboard ALL=(root) NOPASSWD: /usr/bin/systemctl start mc-create-plus, /usr/bin/systemctl stop mc-create-plus, /usr/bin/systemctl restart mc-create-plus, /usr/bin/systemctl status mc-create-plus, /usr/bin/journalctl -u mc-create-plus *
+# mc-ctl itself runs the real systemctl/backup/schedule commands as root;
+# that's why this grants sudo on mc-ctl's exact subcommands rather than on
+# systemctl directly. journalctl read access is granted separately via the
+# dashboard user's membership in the systemd-journal group (see install.sh),
+# not via sudo, so no journalctl entry is needed here. `systemctl is-active`
+# (status) needs no elevated privilege at all.
+#
+# NOTE: this is the standard Ubuntu absolute path for mc-ctl, as installed by
+# the sibling Minecraft-server infra project. Confirm with `which mc-ctl` (or
+# `command -v mc-ctl`) on the real VM before installing this file if that
+# project's install path ever changes.
+dashboard ALL=(root) NOPASSWD: /usr/local/bin/mc-ctl start, /usr/local/bin/mc-ctl stop, /usr/local/bin/mc-ctl restart, /usr/local/bin/mc-ctl backup-now, /usr/local/bin/mc-ctl backup-offsite, /usr/local/bin/mc-ctl schedule-on, /usr/local/bin/mc-ctl schedule-off

@@ -40,6 +40,9 @@ if ! id "$SERVICE_USER" >/dev/null 2>&1; then
     useradd --system --gid "$SERVICE_GROUP" --home-dir "$INSTALL_DIR" \
         --no-create-home --shell /usr/sbin/nologin "$SERVICE_USER"
 fi
+# Grants read access to the Minecraft service's journal logs (needed for
+# /api/logs/recent and /ws/logs) without sudo. Safe to re-run.
+usermod -aG systemd-journal "$SERVICE_USER"
 
 echo "==> Ensuring $INSTALL_DIR exists"
 mkdir -p "$INSTALL_DIR"
