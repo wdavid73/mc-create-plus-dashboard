@@ -1,7 +1,9 @@
 import subprocess
 from unittest.mock import patch
 
-from backend.app.game import parse_player_list
+import pytest
+
+from backend.app.game import GAME_COMMANDS, parse_player_list
 from backend.tests.conftest import authed_client  # fixture: logged-in TestClient, see Task 2 pattern
 
 
@@ -38,6 +40,14 @@ def test_game_command_runs_whitelisted_rcon_command(authed_client):
     mock_rcon.assert_called_once_with("time set day")
     assert resp.status_code == 200
     assert resp.json() == {"ok": True, "output": "Set the time to 1000"}
+
+
+@pytest.mark.parametrize("action,rcon_command", list(GAME_COMMANDS.items()))
+def test_every_whitelisted_game_command_sends_its_exact_rcon_command(authed_client, action, rcon_command):
+    with patch("backend.app.game.send_rcon_command", return_value="ok") as mock_rcon:
+        resp = authed_client.post(f"/api/game/command/{action}")
+    mock_rcon.assert_called_once_with(rcon_command)
+    assert resp.status_code == 200
 
 
 def test_game_command_rejects_unknown_action(authed_client):

@@ -30,6 +30,21 @@ GAME_COMMANDS: dict[str, str] = {
     "time-day": "time set day",
     "time-night": "time set night",
     "weather-clear": "weather clear",
+    "weather-rain": "weather rain",
+    "difficulty-peaceful": "difficulty peaceful",
+    "difficulty-easy": "difficulty easy",
+    "difficulty-normal": "difficulty normal",
+    "difficulty-hard": "difficulty hard",
+    "gamemode-survival-all": "gamemode survival @a",
+    "gamemode-creative-all": "gamemode creative @a",
+    "keepinventory-on": "gamerule keepInventory true",
+    "keepinventory-off": "gamerule keepInventory false",
+    "mobgriefing-on": "gamerule mobGriefing true",
+    "mobgriefing-off": "gamerule mobGriefing false",
+    "daylightcycle-on": "gamerule doDaylightCycle true",
+    "daylightcycle-off": "gamerule doDaylightCycle false",
+    "weathercycle-on": "gamerule doWeatherCycle true",
+    "weathercycle-off": "gamerule doWeatherCycle false",
 }
 
 
