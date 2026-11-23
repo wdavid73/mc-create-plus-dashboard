@@ -4,163 +4,114 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Create+ Dashboard — Iniciar sesión</title>
-<style>
-  :root {
-    --bg: #0f1216;
-    --panel: #171b21;
-    --panel-border: #272c34;
-    --text: #e7e9ec;
-    --muted: #8b939f;
-    --accent: #5fbf77;
-    --accent-dim: #22382a;
-    --danger: #d9664f;
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  }
-  * { box-sizing: border-box; }
-  @media (prefers-reduced-motion: reduce) {
-    .login-card { animation: none !important; opacity: 1 !important; transform: none !important; }
-  }
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-    background:
-      radial-gradient(circle at 18% 18%, rgba(95, 191, 119, 0.10), transparent 42%),
-      radial-gradient(circle at 85% 75%, rgba(122, 167, 214, 0.08), transparent 45%),
-      var(--bg);
-    color: var(--text);
-    line-height: 1.5;
-  }
-  .login-card {
-    width: 100%;
-    max-width: 360px;
-    background: var(--panel);
-    border: 1px solid var(--panel-border);
-    border-radius: 14px;
-    padding: 32px 30px 28px;
-    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
-    opacity: 0;
-    transform: translateY(10px) scale(0.98);
-    animation: card-in 420ms var(--ease-out) forwards;
-  }
-  @keyframes card-in {
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 22px;
-  }
-  .brand-mark {
-    width: 34px; height: 34px; border-radius: 8px;
-    background: linear-gradient(145deg, var(--accent), #3f8c54);
-    display: flex; align-items: center; justify-content: center;
-    color: #0f1a12;
-    flex-shrink: 0;
-  }
-  .brand-mark svg { width: 19px; height: 19px; }
-  .brand h1 { font-size: 16px; margin: 0; font-weight: 600; }
-  .brand p { margin: 1px 0 0; font-size: 12.5px; color: var(--muted); }
-
-  label { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 6px; margin-top: 16px; }
-  label:first-of-type { margin-top: 0; }
-  input {
-    width: 100%;
-    background: #0d1014;
-    border: 1px solid var(--panel-border);
-    color: var(--text);
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 160ms ease, box-shadow 160ms ease;
-  }
-  input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-dim);
-  }
-
-  .submit-btn {
-    width: 100%;
-    margin-top: 22px;
-    background: var(--accent);
-    color: #0f1a12;
-    border: 1px solid var(--accent);
-    padding: 11px 16px;
-    min-height: 44px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 160ms var(--ease-out), filter 160ms ease;
-  }
-  .submit-btn:active { transform: scale(0.97); }
-  @media (hover: hover) and (pointer: fine) {
-    .submit-btn:hover { filter: brightness(1.08); }
-  }
-
-  .error-box {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: #2a1a17;
-    border: 1px solid #4a2e2a;
-    color: #e8a99a;
-    padding: 9px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    margin-top: 16px;
-    opacity: 0;
-    transform: translateY(-4px);
-    animation: error-in 220ms var(--ease-out) forwards;
-  }
-  .error-box[hidden] { display: none !important; }
-  .error-box svg { width: 15px; height: 15px; flex-shrink: 0; color: var(--danger); }
-  @keyframes error-in { to { opacity: 1; transform: translateY(0); } }
-
-  .footnote {
-    text-align: center;
-    font-size: 11.5px;
-    color: #7d8694;
-    margin-top: 22px;
-  }
-</style>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="login.css">
 </head>
-<body>
+<body class="login-body">
 
-<form class="login-card" id="loginForm">
-  <div class="brand">
-    <span class="brand-mark">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/></svg>
-    </span>
+<header class="login-topbar">
+  <div class="login-brand">
+    <span class="brand-mark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 7l8-4 8 4v10l-8 4-8-4z"/></svg></span>
     <div>
-      <h1>Create+ Dashboard</h1>
-      <p>Gestión del servidor</p>
+      <div class="login-brand-title">CREATE+</div>
+      <div class="login-brand-sub">SYS-KERNEL v4.12</div>
     </div>
   </div>
+  <span class="node-pill"><span class="dot"></span>NODE: ONLINE</span>
+</header>
 
-  <label for="username">Usuario</label>
-  <input id="username" name="username" type="text" autocomplete="username" required>
+<main class="login-main">
+  <form class="login-card" id="loginForm">
+    <div class="login-icon-wrap">
+      <span class="login-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </span>
+      <span class="login-icon-dot"></span>
+    </div>
 
-  <label for="password">Contraseña</label>
-  <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <h1 class="login-title">Create<span class="accent">+</span> Control</h1>
+    <p class="login-sub">Minecraft Server Control Panel · Autenticación de nodo</p>
+    <div class="login-status-row">
+      <span class="dot"></span> Forge 1.20.1 <span class="sep">·</span> Servidor Create+
+    </div>
 
-  <!-- Estado de error: credenciales inválidas o demasiados intentos. Se muestra/oculta según la respuesta del backend. -->
-  <div class="error-box" id="errorBox" hidden>
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
-    <span id="errorText">Usuario o contraseña incorrectos</span>
-  </div>
+    <div class="label-row">
+      <label for="username">Usuario / IGN de operador</label>
+      <span class="op-level-badge">OP LEVEL ≥ 3</span>
+    </div>
+    <div class="input-wrap">
+      <span class="input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+      <input id="username" name="username" type="text" autocomplete="username" required placeholder="admin o IGN del operador">
+    </div>
 
-  <button class="submit-btn" type="submit">Iniciar sesión</button>
+    <div class="label-row">
+      <label for="password">Contraseña / Clave</label>
+      <span class="recovery-link" title="Próximamente">Token de recuperación <span class="soon-badge">Próximamente</span></span>
+    </div>
+    <div class="input-wrap">
+      <span class="input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>
+      <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Contraseña del panel o clave RCON">
+      <button type="button" class="input-eye" id="togglePassword" title="Mostrar/ocultar contraseña">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
 
-  <p class="footnote">Acceso restringido — servidor Create+</p>
-</form>
+    <label class="remember-row">
+      <input type="checkbox" id="rememberMe" disabled>
+      <span class="checkbox-box"></span>
+      Mantener sesión iniciada (30 días)
+      <span class="soon-badge">Próximamente</span>
+    </label>
+
+    <div class="error-box" id="errorBox" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <span id="errorText">Usuario o contraseña incorrectos</span>
+    </div>
+
+    <button class="submit-btn" type="submit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+      Acceder a la consola
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+
+    <div class="login-divider"><span>Federación de operadores</span></div>
+
+    <div class="sso-row">
+      <button class="sso-btn" type="button" disabled title="Próximamente">
+        <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
+        Xbox Live / MS
+        <span class="soon-badge">Próximamente</span>
+      </button>
+      <button class="sso-btn" type="button" disabled title="Próximamente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="4"/><path d="M11 10l9-9m0 0v5m0-5h-5"/><path d="M15 6l3 3"/></svg>
+        YubiKey física
+        <span class="soon-badge">Próximamente</span>
+      </button>
+    </div>
+
+    <div class="tunnel-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div>
+        <div class="tunnel-title">Túnel cifrado activo</div>
+        <div class="tunnel-sub">TLS 1.3 · Huella de nodo SHA-384</div>
+      </div>
+      <span class="tunnel-status">● ONLINE</span>
+    </div>
+  </form>
+</main>
+
+<footer class="login-footer">
+  <span>create.net.internal:25565 · v0.5.1e</span>
+  <span>Zona restringida · Contactar al SysAdmin</span>
+</footer>
 
 <script>
+  document.getElementById('togglePassword').addEventListener('click', function () {
+    const pw = document.getElementById('password');
+    pw.type = pw.type === 'password' ? 'text' : 'password';
+  });
+
   document.getElementById('loginForm').addEventListener('submit', function (event) {
     event.preventDefault();
     const errorBox = document.getElementById('errorBox');

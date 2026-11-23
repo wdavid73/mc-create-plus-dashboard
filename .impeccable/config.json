@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "frontend/login.html"
+        ],
+        "createdAt": "2026-11-23T22:08:31.763Z",
+        "reason": "User-approved Stitch login mockup shows a soft amber bloom behind the gear icon; kept at reduced intensity (16px blur, -2px spread, 0.35 alpha) to match the approved reference design"
+      },
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          "frontend/login.html"
+        ],
+        "createdAt": "2026-11-23T22:09:38.551Z",
+        "reason": "11px small-caps monospace eyebrow labels (USUARIO / CONTRASEÑA headers) match the approved Stitch mockup and already sit at the 11px functional-text accessibility floor; the 14-16px guidance targets paragraph body copy, not short label text"
+      },
+      {
+        "rule": "repeated-container-text",
+        "value": "*",
+        "files": [
+          "frontend/login.html"
+        ],
+        "createdAt": "2026-11-23T22:09:44.116Z",
+        "reason": "User explicitly asked to clone the full Stitch login mockup with every non-existent feature (recovery token, remember-me, Xbox Live SSO, YubiKey) individually marked unavailable via the badge, matching the same pattern already used across the dashboard; it is 4 distinct features, not a templating artifact"
+      }
+    ]
+  }
+}
