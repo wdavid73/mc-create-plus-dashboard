@@ -1,0 +1,85 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design tokens ported from the original frontend/styles.css
+ * (navy/gold "Create+" theme). This app is dark-only, so these
+ * live directly on :root instead of behind a .dark toggle.
+ *
+ * --color-brand-* are OUR brand palette (gold accent, status
+ * colors). --background/--foreground/--primary/... are shadcn's
+ * semantic slots: shadcn components (Button, Dialog, ...) read
+ * those names directly, so they're mapped to this same palette
+ * instead of shadcn's default neutral/oklch theme.
+ */
+@theme {
+  --color-bg: #0a0d13;
+  --color-sidebar-bg: #0d111a;
+  --color-panel: #121724;
+  --color-panel-2: #161c2b;
+  --color-panel-border: #232a3a;
+  --color-text: #e7e9ec;
+  --color-muted-text: #8b93a7;
+  --color-brand: #eab53d;
+  --color-brand-bright: #f6c859;
+  --color-brand-dim: #3a2f16;
+  --color-online: #3ecf6e;
+  --color-online-dim: #16331f;
+  --color-danger: #e2574c;
+  --color-danger-dim: #3a211e;
+  --color-warn: #e0b341;
+  --color-info: #6fa8dc;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --font-sans: -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Cascadia Code", "Consolas", monospace;
+
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+  --color-card: var(--color-panel);
+  --color-card-foreground: var(--color-text);
+  --color-popover: var(--color-panel-2);
+  --color-popover-foreground: var(--color-text);
+  --color-primary: var(--color-brand);
+  --color-primary-foreground: #1a1304;
+  --color-secondary: var(--color-panel-2);
+  --color-secondary-foreground: var(--color-text);
+  --color-muted: var(--color-panel-2);
+  --color-muted-foreground: var(--color-muted-text);
+  --color-accent: var(--color-panel-2);
+  --color-accent-foreground: var(--color-text);
+  --color-destructive: var(--color-danger);
+  --color-destructive-foreground: var(--color-text);
+  --color-border: var(--color-panel-border);
+  --color-input: var(--color-panel-border);
+  --color-ring: var(--color-brand);
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+}
