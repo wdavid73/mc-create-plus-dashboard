@@ -1,5 +1,6 @@
 import { Copy, ExternalLink, SquareTerminal, Trash2 } from "lucide-react"
 import { Card } from "@/components/Card"
+import { Select } from "@/components/Select"
 
 const MOCK_LOG_LINES = [
   { ts: "12:10:01", level: "info", message: "Starting server..." },
@@ -75,9 +76,9 @@ export function ConsolePage() {
       </div>
 
       <div className="mt-2 flex gap-2">
-        <select className="flex-1 rounded-md border border-panel-border bg-[#080a0f] px-3 py-2 text-[13px] text-text">
+        <Select wrapperClassName="flex-1" className="bg-[#080a0f]">
           <option>Comando rápido…</option>
-        </select>
+        </Select>
         <button type="button" disabled className="rounded-md bg-panel-2 px-4 py-2 text-[13px] text-text opacity-40">
           Enviar
         </button>

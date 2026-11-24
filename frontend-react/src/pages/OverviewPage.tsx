@@ -17,6 +17,7 @@ import {
 import { Link } from "react-router-dom"
 import { Card, CardHeading } from "@/components/Card"
 import { PlayerAvatar } from "@/components/PlayerAvatar"
+import { Select } from "@/components/Select"
 import { MOCK_MAX_PLAYERS, MOCK_PLAYERS } from "@/lib/mockData"
 
 function ChartPlaceholder() {
@@ -169,13 +170,13 @@ export function OverviewPage() {
         <Card>
           <div className="mb-2.5 text-xs uppercase tracking-wide text-muted-text">Teletransportar jugador</div>
           <div className="flex flex-wrap items-center gap-2">
-            <select className="min-w-[140px] rounded-md border border-panel-border bg-[#0b0e14] px-3 py-2 text-[13px] text-text">
+            <Select wrapperClassName="min-w-[140px]">
               <option>Jugador</option>
-            </select>
+            </Select>
             <span className="text-muted-text">→</span>
-            <select className="min-w-[140px] rounded-md border border-panel-border bg-[#0b0e14] px-3 py-2 text-[13px] text-text">
+            <Select wrapperClassName="min-w-[140px]">
               <option>hacia jugador</option>
-            </select>
+            </Select>
             <button type="button" className="rounded-md bg-brand px-4 py-2 text-[13px] font-bold text-[#1a1304]">
               Teletransportar
             </button>
