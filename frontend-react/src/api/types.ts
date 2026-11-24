@@ -34,6 +34,15 @@ export type ControlAction =
   | "schedule-on"
   | "schedule-off"
 
+export type LogLevel = "info" | "warn"
+
+export type LogLine = {
+  id: number
+  ts: string
+  level: LogLevel
+  message: string
+}
+
 export type GameCommandAction =
   | "time-day"
   | "time-night"

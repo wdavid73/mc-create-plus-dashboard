@@ -20,6 +20,7 @@ import { PlayersList } from "@/components/PlayersList"
 import { ScheduleSwitch } from "@/components/ScheduleSwitch"
 import { TpMenu } from "@/components/TpMenu"
 import { UsageChart } from "@/components/UsageChart"
+import { useLogs } from "@/contexts/LogsContext"
 import { useControlAction, useGameCommand } from "@/hooks/useControlActions"
 import { useMetrics } from "@/hooks/useMetrics"
 import { usePlayers } from "@/hooks/usePlayers"
@@ -31,6 +32,8 @@ export function OverviewPage() {
   const playersQuery = usePlayers()
   const controlAction = useControlAction()
   const gameCommand = useGameCommand()
+  const { lines } = useLogs()
+  const recentLines = lines.slice(-6)
 
   const isActive = statusQuery.data?.status === "active"
   const players = playersQuery.data?.players ?? []
@@ -221,7 +224,21 @@ export function OverviewPage() {
               Live
             </span>
           </div>
-          <div className="h-[150px] overflow-y-auto rounded-lg border border-panel-border bg-[#080a0f]" />
+          <div className="h-[150px] overflow-y-auto rounded-lg border border-panel-border bg-[#080a0f] px-3.5 py-3 font-mono text-[12.5px] leading-[1.7] text-[#b7bec7]">
+            {recentLines.length === 0 ? (
+              <div className="py-5 text-center text-muted-text">Sin actividad reciente</div>
+            ) : (
+              recentLines.map((line) => (
+                <div key={line.id}>
+                  <span className="mr-1.5 text-[#7d8694]">{line.ts}</span>
+                  <span className={line.level === "warn" ? "text-warn" : "text-online"}>
+                    {line.level === "warn" ? "[WARN]" : "[INFO]"}
+                  </span>{" "}
+                  {line.message}
+                </div>
+              ))
+            )}
+          </div>
           <div className="mt-2 text-right">
             <Link to="/console" className="text-xs text-brand-bright hover:underline">
               Ver consola completa →
