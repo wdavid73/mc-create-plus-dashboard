@@ -1,19 +1,22 @@
 import { useQuery } from "@tanstack/react-query"
 import { Navigate, Outlet } from "react-router-dom"
-import { ApiError } from "@/api/client"
 import { getStatus } from "@/api/endpoints"
 
 /**
  * Gates every dashboard route behind a valid session. There's no
  * dedicated "whoami" endpoint, so this reuses /api/status (also
- * require_session-gated) purely as an auth probe: a 401 means "not
- * logged in, go to /login". Any other failure (503 if systemctl
- * itself is unavailable, a network blip, ...) means the session is
- * still fine — let the dashboard render and individual cards show
- * their own error/empty state instead of blocking entry.
+ * require_session-gated) purely as an auth probe.
+ *
+ * Only a clean 2xx response counts as "logged in". A 401 obviously
+ * means no session, but anything else — 503 from systemctl itself
+ * being unavailable, a network error, the dev proxy returning a 500
+ * because nothing is listening on the backend port — also redirects
+ * to /login: none of those confirm a valid session either, and
+ * showing the dashboard shell when we can't tell is exactly the gap
+ * this guard exists to close.
  */
 export function RequireAuth() {
-  const { isPending, isError, error } = useQuery({
+  const { isPending, isError } = useQuery({
     queryKey: ["session-check"],
     queryFn: getStatus,
     retry: false,
@@ -28,7 +31,7 @@ export function RequireAuth() {
     )
   }
 
-  if (isError && error instanceof ApiError && error.status === 401) {
+  if (isError) {
     return <Navigate to="/login" replace />
   }
 
