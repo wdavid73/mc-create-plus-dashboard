@@ -1,40 +1,28 @@
 import { Users } from "lucide-react"
 import { Card, CardHeading } from "@/components/Card"
-import { PlayerAvatar } from "@/components/PlayerAvatar"
-import { MOCK_MAX_PLAYERS, MOCK_PLAYERS } from "@/lib/mockData"
+import { PlayersList } from "@/components/PlayersList"
+import { usePlayers } from "@/hooks/usePlayers"
 
 export function PlayersPage() {
+  const { data } = usePlayers()
+  const players = data?.players ?? []
+  const online = data?.online ?? 0
+  const max = data?.max ?? 0
+  const emptySlots = Math.max(0, max - online)
+
   return (
     <div className="flex flex-col gap-4">
       <Card>
         <CardHeading icon={Users}>
           Jugadores conectados
           <span className="ml-auto text-xs font-medium text-muted-text">
-            {MOCK_PLAYERS.length} / {MOCK_MAX_PLAYERS}
+            {online} / {max}
           </span>
         </CardHeading>
-        <ul className="m-0 flex list-none flex-col gap-1 p-0">
-          {MOCK_PLAYERS.map((name, i) => (
-            <li key={name} className="flex items-center gap-2.5 rounded-lg px-1.5 py-2 text-[13.5px]">
-              <PlayerAvatar index={i} />
-              <div className="min-w-0 flex-1">
-                <span className="block font-semibold text-text">{name}</span>
-                <span className="flex items-center gap-1.5 text-[11.5px] text-muted-text">
-                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-online" />
-                  Online
-                </span>
-              </div>
-              <span className="flex items-center gap-1.5 opacity-40">
-                <button type="button" disabled title="Próximamente" className="cursor-not-allowed p-1 text-muted-text">
-                  ✕
-                </button>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-2 text-[12.5px] text-muted-text">
-          {MOCK_MAX_PLAYERS - MOCK_PLAYERS.length} plazas libres
-        </p>
+        <PlayersList players={players} showActions />
+        {emptySlots > 0 && (
+          <p className="mt-2 text-[12.5px] text-muted-text">{emptySlots} plazas libres</p>
+        )}
       </Card>
 
       <Card>

@@ -16,19 +16,35 @@ import {
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Card, CardHeading } from "@/components/Card"
-import { PlayerAvatar } from "@/components/PlayerAvatar"
-import { Select } from "@/components/Select"
-import { MOCK_MAX_PLAYERS, MOCK_PLAYERS } from "@/lib/mockData"
-
-function ChartPlaceholder() {
-  return (
-    <div className="flex h-[150px] items-center justify-center rounded-md border border-dashed border-panel-border text-xs text-muted-text">
-      Gráfica (Chart.js — Fase 2)
-    </div>
-  )
-}
+import { PlayersList } from "@/components/PlayersList"
+import { ScheduleSwitch } from "@/components/ScheduleSwitch"
+import { TpMenu } from "@/components/TpMenu"
+import { UsageChart } from "@/components/UsageChart"
+import { useControlAction, useGameCommand } from "@/hooks/useControlActions"
+import { useMetrics } from "@/hooks/useMetrics"
+import { usePlayers } from "@/hooks/usePlayers"
+import { useStatus } from "@/hooks/useStatus"
 
 export function OverviewPage() {
+  const statusQuery = useStatus()
+  const metricsQuery = useMetrics()
+  const playersQuery = usePlayers()
+  const controlAction = useControlAction()
+  const gameCommand = useGameCommand()
+
+  const isActive = statusQuery.data?.status === "active"
+  const players = playersQuery.data?.players ?? []
+  const online = playersQuery.data?.online ?? 0
+  const max = playersQuery.data?.max ?? 0
+
+  const labels = metricsQuery.data?.labels ?? []
+  const cpu = metricsQuery.data?.cpu ?? []
+  const ramJava = metricsQuery.data?.ram_java_gb ?? []
+  const ramVm = metricsQuery.data?.ram_vm_gb ?? []
+  const cpuLast = cpu.at(-1)
+  const ramJavaLast = ramJava.at(-1)
+  const ramVmLast = ramVm.at(-1)
+
   return (
     <div className="flex flex-col gap-[18px] lg:flex-row lg:items-start">
       <div className="flex min-w-0 flex-1 flex-col gap-4">
@@ -36,12 +52,18 @@ export function OverviewPage() {
         <div className="flex flex-wrap gap-4">
           <Card className="min-w-[280px] flex-[1.4_1.4_0%]">
             <div className="mb-3.5 flex flex-wrap items-center gap-[18px]">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-online-dim px-3.5 py-1.5 text-sm font-semibold text-online">
-                <span className="h-2 w-2 rounded-full bg-online" />
-                Online
+              <span
+                className={
+                  isActive
+                    ? "inline-flex items-center gap-1.5 rounded-full bg-online-dim px-3.5 py-1.5 text-sm font-semibold text-online"
+                    : "inline-flex items-center gap-1.5 rounded-full bg-danger-dim px-3.5 py-1.5 text-sm font-semibold text-danger"
+                }
+              >
+                <span className={cnDot(isActive)} />
+                {isActive ? "Online" : "Offline"}
               </span>
               <span className="text-[12.5px] text-muted-text">
-                Servicio: <b className="font-semibold text-text">active</b>
+                Servicio: <b className="font-semibold text-text">{statusQuery.data?.status ?? "—"}</b>
               </span>
             </div>
             <div className="flex flex-wrap gap-8">
@@ -52,7 +74,7 @@ export function OverviewPage() {
               <div>
                 <div className="mb-0.5 text-[11.5px] text-muted-text">Jugadores</div>
                 <div className="text-[14.5px] font-semibold text-text">
-                  {MOCK_PLAYERS.length} / {MOCK_MAX_PLAYERS}
+                  {online} / {max}
                 </div>
               </div>
               <div>
@@ -66,22 +88,27 @@ export function OverviewPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                className="flex min-h-11 items-center gap-1.5 rounded-md border border-[#6b5420] bg-brand-dim px-4 text-[13px] font-bold text-brand-bright"
+                disabled={!isActive || controlAction.isPending}
+                onClick={() => controlAction.mutate("restart")}
+                className="flex min-h-11 items-center gap-1.5 rounded-md border border-[#6b5420] bg-brand-dim px-4 text-[13px] font-bold text-brand-bright disabled:opacity-40"
               >
                 <RotateCcw className="h-[15px] w-[15px]" />
                 Restart
               </button>
               <button
                 type="button"
-                className="flex min-h-11 items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 text-[13px] font-semibold text-text"
+                disabled={!isActive || controlAction.isPending}
+                onClick={() => controlAction.mutate("stop")}
+                className="flex min-h-11 items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 text-[13px] font-semibold text-text disabled:opacity-40"
               >
                 <Square className="h-[15px] w-[15px]" />
                 Stop
               </button>
               <button
                 type="button"
-                disabled
-                className="flex min-h-11 items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 text-[13px] font-semibold text-text opacity-40"
+                disabled={isActive || controlAction.isPending}
+                onClick={() => controlAction.mutate("start")}
+                className="flex min-h-11 items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 text-[13px] font-semibold text-text disabled:opacity-40"
               >
                 <Play className="h-[15px] w-[15px]" />
                 Start
@@ -101,10 +128,11 @@ export function OverviewPage() {
                 CPU Usage
               </h2>
               <span className="text-[26px] font-bold text-brand-bright">
-                34<span className="text-sm">%</span>
+                {cpuLast !== undefined ? Math.round(cpuLast) : 0}
+                <span className="text-sm">%</span>
               </span>
             </div>
-            <ChartPlaceholder />
+            <UsageChart labels={labels} data={cpu} color="#eab53d" />
           </Card>
           <Card>
             <div className="mb-1 flex items-center justify-between">
@@ -115,10 +143,11 @@ export function OverviewPage() {
                 RAM (Java)
               </h2>
               <span className="text-[26px] font-bold text-brand-bright">
-                7.8<span className="text-sm">GB</span>
+                {ramJavaLast !== undefined ? ramJavaLast.toFixed(1) : "0.0"}
+                <span className="text-sm">GB</span>
               </span>
             </div>
-            <ChartPlaceholder />
+            <UsageChart labels={labels} data={ramJava} color="#eab53d" />
           </Card>
         </div>
 
@@ -128,11 +157,19 @@ export function OverviewPage() {
             <div className="flex flex-col gap-2.5">
               <div className="text-xs uppercase tracking-wide text-muted-text">Respaldos</div>
               <div className="flex flex-wrap gap-2">
-                <button type="button" className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text">
+                <button
+                  type="button"
+                  onClick={() => controlAction.mutate("backup-now")}
+                  className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text"
+                >
                   <Upload className="h-[15px] w-[15px]" />
                   Backup ahora
                 </button>
-                <button type="button" className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text">
+                <button
+                  type="button"
+                  onClick={() => controlAction.mutate("backup-offsite")}
+                  className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text"
+                >
                   <Cloud className="h-[15px] w-[15px]" />
                   Backup offsite
                 </button>
@@ -140,24 +177,24 @@ export function OverviewPage() {
             </div>
             <div className="flex flex-col gap-2.5 border-l border-panel-border pl-7">
               <div className="text-xs uppercase tracking-wide text-muted-text">Automatización</div>
-              <div className="flex items-center gap-2.5">
-                <span className="relative h-[22px] w-10 shrink-0 rounded-full border border-panel-border bg-panel-border">
-                  <span className="absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-muted-text" />
-                </span>
-                <span className="text-[13px] text-text">
-                  Horario automático
-                  <span className="block text-xs text-muted-text">Desactivado</span>
-                </span>
-              </div>
+              <ScheduleSwitch />
             </div>
             <div className="flex flex-col gap-2.5 border-l border-panel-border pl-7">
               <div className="text-xs uppercase tracking-wide text-muted-text">Mundo</div>
               <div className="flex flex-wrap gap-2">
-                <button type="button" className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text">
+                <button
+                  type="button"
+                  onClick={() => gameCommand.mutate("time-day")}
+                  className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text"
+                >
                   <Sun className="h-[15px] w-[15px]" />
                   Hacer de día
                 </button>
-                <button type="button" className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text">
+                <button
+                  type="button"
+                  onClick={() => gameCommand.mutate("time-night")}
+                  className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text"
+                >
                   <MoonStar className="h-[15px] w-[15px]" />
                   Hacer de noche
                 </button>
@@ -169,18 +206,7 @@ export function OverviewPage() {
         {/* TP menu */}
         <Card>
           <div className="mb-2.5 text-xs uppercase tracking-wide text-muted-text">Teletransportar jugador</div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Select wrapperClassName="min-w-[140px]">
-              <option>Jugador</option>
-            </Select>
-            <span className="text-muted-text">→</span>
-            <Select wrapperClassName="min-w-[140px]">
-              <option>hacia jugador</option>
-            </Select>
-            <button type="button" className="rounded-md bg-brand px-4 py-2 text-[13px] font-bold text-[#1a1304]">
-              Teletransportar
-            </button>
-          </div>
+          <TpMenu players={players} />
         </Card>
 
         {/* Console preview */}
@@ -210,23 +236,10 @@ export function OverviewPage() {
           <CardHeading icon={Users}>
             Connected Players
             <span className="ml-auto text-xs font-medium text-muted-text">
-              {MOCK_PLAYERS.length} / {MOCK_MAX_PLAYERS}
+              {online} / {max}
             </span>
           </CardHeading>
-          <ul className="m-0 flex list-none flex-col gap-1 p-0">
-            {MOCK_PLAYERS.slice(0, 4).map((name, i) => (
-              <li key={name} className="flex items-center gap-2.5 rounded-lg px-1.5 py-2 text-[13.5px]">
-                <PlayerAvatar index={i} />
-                <div className="min-w-0 flex-1">
-                  <span className="block font-semibold text-text">{name}</span>
-                  <span className="flex items-center gap-1.5 text-[11.5px] text-muted-text">
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-online" />
-                    Online
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <PlayersList players={players} limit={4} />
         </Card>
 
         <Card>
@@ -234,7 +247,11 @@ export function OverviewPage() {
           <div className="flex flex-col gap-3.5">
             {[
               { icon: Cpu, label: "CPU", value: "Próximamente" },
-              { icon: Layers, label: "RAM", value: "7.8 / 12.0 GB" },
+              {
+                icon: Layers,
+                label: "RAM",
+                value: ramVmLast !== undefined ? `${ramVmLast.toFixed(1)} GB` : "—",
+              },
               { icon: HardDrive, label: "Storage", value: "Próximamente" },
               { icon: Wifi, label: "Network", value: "Próximamente" },
             ].map(({ icon: Icon, label, value }, i, arr) => (
@@ -258,4 +275,8 @@ export function OverviewPage() {
       </div>
     </div>
   )
+}
+
+function cnDot(isActive: boolean) {
+  return isActive ? "h-2 w-2 rounded-full bg-online" : "h-2 w-2 rounded-full bg-danger"
 }

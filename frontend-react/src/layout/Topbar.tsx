@@ -1,10 +1,13 @@
 import { LogOut, Menu } from "lucide-react"
+import { useLogout } from "@/hooks/useAuth"
 
 type TopbarProps = {
   onMenuClick: () => void
 }
 
 export function Topbar({ onMenuClick }: TopbarProps) {
+  const logout = useLogout()
+
   return (
     <header
       className="relative flex min-h-[108px] items-end justify-between border-b border-panel-border bg-cover bg-[center_60%] px-7 py-[26px]"
@@ -31,7 +34,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
         <button
           type="button"
           title="Cerrar sesión"
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-panel-border bg-panel/80 text-muted-text"
+          disabled={logout.isPending}
+          onClick={() => logout.mutate()}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-panel-border bg-panel/80 text-muted-text disabled:opacity-50"
         >
           <LogOut className="h-4 w-4" />
         </button>
