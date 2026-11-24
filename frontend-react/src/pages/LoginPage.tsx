@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import {
   AlertCircle,
@@ -18,6 +18,14 @@ import { login } from "@/api/endpoints"
 
 export function LoginPage() {
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const previous = document.title
+    document.title = "Create+ Dashboard — Iniciar sesión"
+    return () => {
+      document.title = previous
+    }
+  }, [])
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)

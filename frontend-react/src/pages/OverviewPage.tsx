@@ -12,6 +12,7 @@ import {
   Users,
   Wifi,
   Cloud,
+  CloudSun,
   Database,
 } from "lucide-react"
 import { Link } from "react-router-dom"
@@ -200,6 +201,14 @@ export function OverviewPage() {
                 >
                   <MoonStar className="h-[15px] w-[15px]" />
                   Hacer de noche
+                </button>
+                <button
+                  type="button"
+                  onClick={() => gameCommand.mutate("weather-clear")}
+                  className="flex items-center gap-1.5 rounded-md border border-panel-border bg-panel-2 px-4 py-2.5 text-[13px] text-text"
+                >
+                  <CloudSun className="h-[15px] w-[15px]" />
+                  Limpiar clima
                 </button>
               </div>
             </div>
