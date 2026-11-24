@@ -47,18 +47,18 @@ usermod -aG systemd-journal "$SERVICE_USER"
 echo "==> Ensuring $INSTALL_DIR exists"
 mkdir -p "$INSTALL_DIR"
 
-echo "==> Copying backend/ and frontend/ into $INSTALL_DIR"
+echo "==> Copying backend/ and frontend-react/ into $INSTALL_DIR"
 if command -v rsync >/dev/null 2>&1; then
     rsync -a --delete --exclude 'tests/' --exclude '__pycache__/' --exclude '*.pyc' \
         "$REPO_ROOT/backend/" "$INSTALL_DIR/backend/"
-    rsync -a --delete --exclude 'tests/' --exclude 'node_modules/' \
-        "$REPO_ROOT/frontend/" "$INSTALL_DIR/frontend/"
+    rsync -a --delete --exclude 'node_modules/' --exclude 'dist/' \
+        "$REPO_ROOT/frontend-react/" "$INSTALL_DIR/frontend-react/"
 else
-    rm -rf "$INSTALL_DIR/backend" "$INSTALL_DIR/frontend"
-    mkdir -p "$INSTALL_DIR/backend" "$INSTALL_DIR/frontend"
+    rm -rf "$INSTALL_DIR/backend" "$INSTALL_DIR/frontend-react"
+    mkdir -p "$INSTALL_DIR/backend" "$INSTALL_DIR/frontend-react"
     cp -r "$REPO_ROOT/backend/." "$INSTALL_DIR/backend/"
-    cp -r "$REPO_ROOT/frontend/." "$INSTALL_DIR/frontend/"
-    rm -rf "$INSTALL_DIR/backend/tests" "$INSTALL_DIR/frontend/tests"
+    cp -r "$REPO_ROOT/frontend-react/." "$INSTALL_DIR/frontend-react/"
+    rm -rf "$INSTALL_DIR/backend/tests" "$INSTALL_DIR/frontend-react/node_modules" "$INSTALL_DIR/frontend-react/dist"
 fi
 
 echo "==> Creating/updating venv at $INSTALL_DIR/venv"
@@ -67,6 +67,16 @@ if [[ ! -x "$INSTALL_DIR/venv/bin/python" ]]; then
 fi
 "$INSTALL_DIR/venv/bin/pip" install --upgrade pip
 "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/backend/requirements.txt"
+
+echo "==> Ensuring Bun is installed (for building the frontend)"
+export BUN_INSTALL="/opt/bun"
+BUN_BIN="$BUN_INSTALL/bin/bun"
+if [[ ! -x "$BUN_BIN" ]]; then
+    curl -fsSL https://bun.sh/install | bash
+fi
+
+echo "==> Building frontend (bun install && bun run build)"
+(cd "$INSTALL_DIR/frontend-react" && "$BUN_BIN" install --frozen-lockfile && "$BUN_BIN" run build)
 
 echo "==> Installing .env from $ENV_SRC"
 if [ "$(readlink -f "$ENV_SRC")" != "$(readlink -f "$INSTALL_DIR/.env" 2>/dev/null || echo "")" ]; then

@@ -22,8 +22,14 @@ cp .env.example .env   # fill in ADMIN_USERNAME, ADMIN_PASSWORD_HASH, SESSION_SE
 venv/bin/uvicorn app.main:app --reload
 ```
 
+```bash
+cd frontend-react
+bun install
+bun dev   # proxies /api and /ws to the backend on :8000 (see vite.config.ts)
+```
+
 Run tests: `pytest backend/tests/ -v`
 
 ## Deployment
 
-See `deploy/install.sh` and `.github/workflows/deploy.yml` — every push to `main` re-deploys to the configured host automatically.
+See `deploy/install.sh` and `.github/workflows/deploy.yml` — every push to `main` re-deploys to the configured host automatically. `install.sh` builds the frontend on the target VM (installing Bun if it isn't already present) and the backend serves the resulting `frontend-react/dist/` — there's no separate static file server.
